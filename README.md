@@ -1,1 +1,2 @@
 # gdscript-web3
+The project aim to develop a dedicated SDK for the Godot game engine using GDScript, which theoretically is very similar to web3.js. Our initial development and testing will be done on Optimism, which also means that Optimism is our first target for support. The primary reason for choosing Optimism is its strong support for the public goods sector, and the secondary reason is that its logo looks really nice, hha~
