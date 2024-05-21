@@ -32,6 +32,8 @@ extern "C" {
 }
 
 #include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
 
 class Secp256k1Wrapper : public RefCounted {
 	GDCLASS(Secp256k1Wrapper, RefCounted);
@@ -45,14 +47,14 @@ public:
 
 	bool initialize();
 
-	bool set_secret_key(const std::string& key);
-	const std::array<unsigned char, 32> get_secret_key() const;
-	bool save_secret_key(const std::string& path);
+	bool set_secret_key(const String &key);
+	Array get_secret_key() const;
+	bool save_secret_key(const String &path);
 	void print_secret_key();
 
-	bool set_public_key(const std::string& key);
-	const secp256k1_pubkey  get_public_key() const;
-	bool save_public_key(const std::string& path);
+	bool set_public_key(const String &key);
+	secp256k1_pubkey  get_public_key() const;
+	bool save_public_key(const String &path);
 	void print_public_key();
 
 	bool generate_key_pair();
@@ -62,7 +64,7 @@ public:
 
 private:
     secp256k1_context* ctx;
-    std::array<unsigned char, 32> secret_key;
+    Array secret_key;
     secp256k1_pubkey public_key;
 	static int fill_random(unsigned char* data, size_t size);
 };

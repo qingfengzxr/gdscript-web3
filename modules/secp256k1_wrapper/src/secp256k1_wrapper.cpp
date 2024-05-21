@@ -27,8 +27,8 @@ bool Secp256k1Wrapper::initialize() {
 	return true;
 }
 
-bool Secp256k1Wrapper::set_secret_key(const std::string& key) {
-	std::string hex_key = key;
+bool Secp256k1Wrapper::set_secret_key(const String &key) {
+	std::string hex_key = key.utf8().get_data();
 	if (hex_key.substr(0, 2) == "0x") {
 		hex_key = hex_key.substr(2);
 	}
@@ -51,12 +51,12 @@ bool Secp256k1Wrapper::set_secret_key(const std::string& key) {
 	return true;
 }
 
-const std::array<unsigned char, 32> Secp256k1Wrapper::get_secret_key() const {
+Array Secp256k1Wrapper::get_secret_key() const {
 	return secret_key;
 }
 
-bool Secp256k1Wrapper::set_public_key(const std::string& key) {
-	std::string hex_key = key;
+bool Secp256k1Wrapper::set_public_key(const String &key) {
+	std::string hex_key = key.utf8().get_data();
 	if (hex_key.substr(0, 2) == "0x") {
 		hex_key = hex_key.substr(2);
 	}
@@ -83,12 +83,12 @@ bool Secp256k1Wrapper::set_public_key(const std::string& key) {
 }
 
 
-const secp256k1_pubkey  Secp256k1Wrapper::get_public_key() const {
+secp256k1_pubkey  Secp256k1Wrapper::get_public_key() const {
 	return public_key;
 }
 
-bool Secp256k1Wrapper::save_public_key(const std::string& path) {
-	std::ofstream file(path, std::ios::binary);
+bool Secp256k1Wrapper::save_public_key(const String &path) {
+	std::ofstream file(path.utf8().get_data(), std::ios::binary);
 	if (!file.is_open()) {
 		std::cout << "Failed to open file" << std::endl;
 		return false;
@@ -110,8 +110,8 @@ bool Secp256k1Wrapper::save_public_key(const std::string& path) {
 	return true;
 }
 
-bool Secp256k1Wrapper::save_secret_key(const std::string& path) {
-	std::ofstream file(path, std::ios::binary);
+bool Secp256k1Wrapper::save_secret_key(const String &path) {
+	std::ofstream file(path.utf8().get_data(), std::ios::binary);
 	if (!file.is_open()) {
 		std::cout << "Failed to open file" << std::endl;
 		return false;
@@ -171,7 +171,10 @@ bool Secp256k1Wrapper::generate_key_pair() {
 		return false;
 	}
 
-	std::copy(seckey, seckey + sizeof(seckey), secret_key.begin());
+	secret_key.clear();
+	for (int i = 0; i < sizeof(seckey); ++i) {
+		secret_key.append(seckey[i]);
+	}
 	return true;
 }
 
@@ -182,7 +185,9 @@ bool Secp256k1Wrapper::compute_public_key_from_seckey() {
 	}
 
 	unsigned char seckey[32];
-	std::copy(secret_key.begin(), secret_key.end(), seckey);
+	for (int i = 0; i < secret_key.size(); ++i) {
+		seckey[i] = secret_key[i];
+	}
 
 	if (!secp256k1_ec_seckey_verify(ctx, seckey)) {
 		std::cout << "Invalid secret key" << std::endl;
@@ -212,7 +217,9 @@ bool Secp256k1Wrapper::sign(const std::vector<unsigned char>& message, secp256k1
 	unsigned char seckey[32];
 	unsigned char serialized_signature[64];
 
-	std::copy(secret_key.begin(), secret_key.end(), seckey);
+	for (int i = 0; i < secret_key.size(); ++i) {
+		seckey[i] = secret_key[i];
+	}
 
 	print_hex(seckey, sizeof(seckey));
 
@@ -285,7 +292,7 @@ void Secp256k1Wrapper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("print_secret_key"), &Secp256k1Wrapper::print_secret_key);
 
 	ClassDB::bind_method(D_METHOD("set_public_key", "key"), &Secp256k1Wrapper::set_public_key);
-	ClassDB::bind_method(D_METHOD("get_public_key"), &Secp256k1Wrapper::get_public_key);
+	// ClassDB::bind_method(D_METHOD("get_public_key"), &Secp256k1Wrapper::get_public_key);
 	ClassDB::bind_method(D_METHOD("save_public_key", "path"), &Secp256k1Wrapper::save_public_key);
 	ClassDB::bind_method(D_METHOD("print_public_key"), &Secp256k1Wrapper::print_public_key);
 
