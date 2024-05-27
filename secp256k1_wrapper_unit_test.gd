@@ -1,0 +1,81 @@
+extends Label
+
+# The test case
+func test_expected_behavior():
+	var secp256k1 = Secp256k1Wrapper.new()
+	assert(secp256k1.initialize(), "secp256k1 initialized failed!")
+	print("pass: secp256k1 initialized success!")
+
+	# unitest for key pair operation
+	# assert(secp256k1.generate_key_pair(), "generate key pair failed!")
+	# print("pass: generate key pair success!")
+
+	var set_sec_key = "37e17f7c0e6d14ad7bf694051b84b2572d638d875b0bb745bb151754de838d00"
+	assert(secp256k1.set_secret_key(set_sec_key), "set_secret_key failed!")
+	print("pass: set_secret_key success!")
+
+	var get_sec_key = secp256k1.get_secret_key()
+	assert(get_sec_key.hex_encode() == set_sec_key, "get_sec_key no equal set_sec_key!")
+	print("pass: get_sec_key equal set_sec_key!")
+	print("get_sec_key: ", get_sec_key.hex_encode())
+
+	assert(secp256k1.compute_public_key_from_seckey(), "compute_public_key_from_seckey failed!")
+	print("pass: compute_public_key_from_seckey success!")
+
+	var get_pub_key = secp256k1.get_public_key()
+	print("get_pub_key: ", get_pub_key.hex_encode())
+	var right_pub_key = "04e7c1e50c2525c456113c01d8b3043ef46562562d1342efa9dfc9cda60f610829901c92ac79b40d044373a8d39c293f96e2c4a1bff23aa45deb8a7d60badccfc0"
+	assert(get_pub_key.hex_encode() == right_pub_key, "get_pub_key no equal right_pub_key!")
+	print("pass: get_pub_key equal right_pub_key!")
+
+	# unitest for sign and verify
+	var data = "Hello, world!"
+	print("data sha256: ", data.sha256_buffer().hex_encode())
+
+	# recover pubkey
+	var sig = "450553de9c19d47acfeda0f32b2406ee9dabc13e8aca0abef8d313c163c1b45f5d5be96f8c34cd8e05de68bc7617ef069e606312f47a79a5b68b190918f087d300"
+	var rpubkey = secp256k1.recover_pubkey(data.sha256_buffer(), sig.hex_decode())
+	print("recover pubkey: ", rpubkey.hex_encode())
+
+	# set public key
+	secp256k1.set_public_key(rpubkey.hex_encode())
+	get_pub_key = secp256k1.get_public_key()
+	print("get_pub_key 2: ", get_pub_key.hex_encode())
+
+	var signature = secp256k1.sign(data.sha256_buffer())
+	var right_sign = "450553de9c19d47acfeda0f32b2406ee9dabc13e8aca0abef8d313c163c1b45f5d5be96f8c34cd8e05de68bc7617ef069e606312f47a79a5b68b190918f087d300"
+	print("signatures: ", signature.hex_encode())
+	assert(signature.hex_encode() == right_sign, "sign no equal right_sign!")
+	print("pass: sign equal right_sign!")
+
+	var verify_result = secp256k1.verify(data.sha256_buffer(), signature)
+	assert(verify_result, "verify failed!")
+	print("pass: verify success!")
+	pass
+
+func test_unexpected_behavior():
+	var secp256k1 = Secp256k1Wrapper.new()
+	assert(secp256k1.initialize(), "secp256k1 initialized failed!")
+
+	var set_sec_key = "7f7c0e6d14ad7bf694051b84b2572d638d875b0bb745bb151754de838d00"
+	assert(!secp256k1.set_secret_key(set_sec_key), "set incorrect secret key should be failed!")
+	print("pass: set incorrect secret key")
+
+	# unitest for sign and verify
+	var data = "Hello, world!"
+	var signature = secp256k1.sign(data.sha256_buffer());
+	var right_sign = "5fb4c163c113d3f8be0aca8a3ec1ab9dee06242bf3a0edcf7ad4199cde530545d387f01809198bb6a5797af41263609e06ef1776bc68de058ecd348c6fe95b5d"
+	assert(signature.hex_encode() == right_sign, "sign no equal right_sign!")
+	print("pass: sign equal right_sign!")
+
+	var verify_result = secp256k1.verify(data.sha256_buffer(), signature.slice(0, 31))
+	assert(!verify_result, "verify should be failed!")
+	print("pass: verify")
+
+	pass
+
+# Run the test case
+func _ready() -> void:
+	test_expected_behavior()
+	# test_unexpected_behavior()
+
