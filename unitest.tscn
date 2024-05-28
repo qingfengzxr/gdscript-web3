@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://biyptoci8rfi7"]
 
-[ext_resource type="Script" path="res://secp256k1_wrapper_uni_test.gd" id="1_kyujt"]
-[ext_resource type="Script" path="res://keccak_wrapper_uni_test.gd" id="2_qiyr0"]
+[ext_resource type="Script" path="res://keccak_wrapper_unit_test.gd" id="1_kyujt"]
+[ext_resource type="Script" path="res://secp256k1_wrapper_unit_test.gd" id="2_qiyr0"]
 
 [node name="Node2D" type="Node2D"]
 

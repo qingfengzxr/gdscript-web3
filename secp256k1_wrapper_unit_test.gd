@@ -2,13 +2,14 @@ extends Label
 
 # The test case
 func test_expected_behavior():
+	print("------> start test secp256kq wrapper expected behavior <------")
 	var secp256k1 = Secp256k1Wrapper.new()
 	assert(secp256k1.initialize(), "secp256k1 initialized failed!")
 	print("pass: secp256k1 initialized success!")
 
 	# unitest for key pair operation
-	# assert(secp256k1.generate_key_pair(), "generate key pair failed!")
-	# print("pass: generate key pair success!")
+	assert(secp256k1.generate_key_pair(), "generate key pair failed!")
+	print("pass: generate key pair success!")
 
 	var set_sec_key = "37e17f7c0e6d14ad7bf694051b84b2572d638d875b0bb745bb151754de838d00"
 	assert(secp256k1.set_secret_key(set_sec_key), "set_secret_key failed!")
@@ -35,6 +36,7 @@ func test_expected_behavior():
 	# recover pubkey
 	var sig = "450553de9c19d47acfeda0f32b2406ee9dabc13e8aca0abef8d313c163c1b45f5d5be96f8c34cd8e05de68bc7617ef069e606312f47a79a5b68b190918f087d300"
 	var rpubkey = secp256k1.recover_pubkey(data.sha256_buffer(), sig.hex_decode())
+	assert(rpubkey.hex_encode() == right_pub_key, "recover pub key no equal right_pub_key!")
 	print("recover pubkey: ", rpubkey.hex_encode())
 
 	# set public key
@@ -51,6 +53,7 @@ func test_expected_behavior():
 	var verify_result = secp256k1.verify(data.sha256_buffer(), signature)
 	assert(verify_result, "verify failed!")
 	print("pass: verify success!")
+	print("------> test secp256kq wrapper expected behavior done <------")
 	pass
 
 func test_unexpected_behavior():
