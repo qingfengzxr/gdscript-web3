@@ -9,6 +9,9 @@ module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
 # module_env.add_source_files(env.modules_sources, "src/*.cpp")
 
 # Append CCFLAGS flags for both C and C++ code.
+# If you need to, you can:
+# - Append CFLAGS for C code only.
+# - Append CXXFLAGS for C++ code only.
 module_env.Append(CCFLAGS=['-O2', '-Wno-unused-function'])
 module_env.Append(CPPPATH=['./libsecp256k1/include',
                            './libsecp256k1/src/modules/recovery',
@@ -16,8 +19,8 @@ module_env.Append(CPPPATH=['./libsecp256k1/include',
                            "./libsecp256k1/src",
                            "./libkeccak"
                            ])
-# If you need to, you can:
-# - Append CFLAGS for C code only.
-# - Append CXXFLAGS for C++ code only.
+
+# Add the compile define options for keccak library
+module_env.Append(CPPDEFINES=['XKCP_has_Sponge_Keccak', 'XKCP_has_FIPS202', 'XKCP_has_KeccakP1600'])
 
 
