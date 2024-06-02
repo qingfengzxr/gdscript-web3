@@ -1,9 +1,21 @@
 #ifndef KECCAK_H
 #define KECCAK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "keccak256.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include <iostream>
 #include <vector>
 #include <iomanip>
+#include <stdlib.h>
+// #include <gmp.h>
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
