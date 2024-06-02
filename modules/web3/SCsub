@@ -5,6 +5,7 @@ Import('env')
 module_env = env.Clone()
 module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
+module_env.add_source_files(env.modules_sources, "ethprotocol/*.c")
 # module_env.add_source_files(env.modules_sources, "libsecp256k1/src/*.c")
 # module_env.add_source_files(env.modules_sources, "src/*.cpp")
 
@@ -17,7 +18,8 @@ module_env.Append(CPPPATH=['./libsecp256k1/include',
                            './libsecp256k1/src/modules/recovery',
                            './libsecp256k1/src/modules/ecdh',
                            "./libsecp256k1/src",
-                           "./libkeccak"
+                           "./libkeccak",
+                           "./ethprotocol",
                            ])
 
 # Add the compile define options for keccak library

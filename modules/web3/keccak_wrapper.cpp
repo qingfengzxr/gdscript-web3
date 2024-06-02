@@ -13,23 +13,6 @@ KeccakWrapper::~KeccakWrapper() {
 	;
 }
 
-int eth_keccak256(uint8_t *dest, const uint8_t *bytes, size_t len) {
-  Keccak_HashInstance instance;
-
-  if (dest == NULL || bytes == NULL)
-    return -1;
-
-  if (Keccak_HashInitialize(&instance, KECCAK256_RATE, KECCAK256_CAPACITY,
-                            KECCAK256_HASHBITLEN,
-                            KECCAK256_DELIMITED_SUFFIX) == KECCAK_FAIL)
-    return -1;
-
-  if (Keccak_HashUpdate(&instance, bytes, len * 8) == KECCAK_FAIL)
-    return -1;
-
-  return Keccak_HashFinal(&instance, dest) == KECCAK_SUCCESS ? 1 : -1;
-}
-
 PackedByteArray KeccakWrapper::keccak256_hash(const PackedByteArray &data) {
 	uint8_t hash[32];
 
