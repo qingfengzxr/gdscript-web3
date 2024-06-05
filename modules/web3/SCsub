@@ -1,26 +1,51 @@
 # SCsub
-
+import subprocess
 Import('env')
+
+# Run pkg-config for gmp and get the output
+pkg_config_output = subprocess.check_output("pkg-config --cflags --libs gmp", shell=True).decode('utf-8')
+
+# Split the output into parts
+parts = pkg_config_output.split()
+
+# Initialize empty lists for include paths, library paths, and libraries
+include_paths = []
+library_paths = []
+libraries = []
+
+# Parse the output
+for part in parts:
+    if part.startswith('-I'):
+        include_paths.append(part[2:])
+    elif part.startswith('-L'):
+        library_paths.append(part[2:])
+    elif part.startswith('-l'):
+        libraries.append(part[2:])
 
 module_env = env.Clone()
 module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
 module_env.add_source_files(env.modules_sources, "ethprotocol/*.c")
-# module_env.add_source_files(env.modules_sources, "libsecp256k1/src/*.c")
-# module_env.add_source_files(env.modules_sources, "src/*.cpp")
+module_env.add_source_files(env.modules_sources, "ethprotocol/*.cpp")
+module_env.add_source_files(env.modules_sources, "bigint/*.cpp")
 
 # Append CCFLAGS flags for both C and C++ code.
 # If you need to, you can:
 # - Append CFLAGS for C code only.
 # - Append CXXFLAGS for C++ code only.
 module_env.Append(CCFLAGS=['-O2', '-Wno-unused-function'])
-module_env.Append(CPPPATH=['./libsecp256k1/include',
-                           './libsecp256k1/src/modules/recovery',
-                           './libsecp256k1/src/modules/ecdh',
-                           "./libsecp256k1/src",
-                           "./libkeccak",
-                           "./ethprotocol",
-                           ])
+# Add the paths and libraries to the environment
+module_env.Append(CPPPATH=include_paths + ['./libsecp256k1/include',
+                                           './libsecp256k1/src/modules/recovery',
+                                           './libsecp256k1/src/modules/ecdh',
+                                           "./libsecp256k1/src",
+                                           "./libkeccak",
+                                           "./ethprotocol",
+                                           "./bigint"
+                                           ])
+
+env.Append(LIBPATH=library_paths)
+env.Append(LIBS=libraries)
 
 # Add the compile define options for keccak library
 module_env.Append(CPPDEFINES=['XKCP_has_Sponge_Keccak', 'XKCP_has_FIPS202', 'XKCP_has_KeccakP1600'])

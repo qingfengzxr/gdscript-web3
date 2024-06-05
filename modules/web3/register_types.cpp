@@ -6,6 +6,8 @@
 // #include "secp256k1_wrapper.h"
 #include "web3.h"
 #include "optimism.h"
+#include "legacy_tx.h"
+#include "big_int.h"
 
 void initialize_web3_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -15,6 +17,8 @@ void initialize_web3_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<Optimism>();
 	ClassDB::register_class<Secp256k1Wrapper>();
 	ClassDB::register_class<KeccakWrapper>();
+	ClassDB::register_class<LegacyTx>();
+	ClassDB::register_class<BigInt>();
 }
 
 void uninitialize_web3_module(ModuleInitializationLevel p_level) {
