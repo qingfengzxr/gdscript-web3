@@ -16,6 +16,10 @@ Godot Engine is a feature-packed, cross-platform game engine that allows users t
 
 Godot is completely free and open source under the permissive MIT license. Users' games belong to them, down to the last line of engine code. Godot's development is fully independent and community-driven, empowering users to shape the engine to match their expectations. It is supported by the Godot Foundation, a not-for-profit organization.
 
+## Support Godot Version
+
+At this stage, we are developing based on `4.1-stable` version. Currently, we only guarantee upward compatibility. Therefore, when you use the program compiled from this project to extend development on older game projects, please pay attention to the version number of the Godot engine program you originally used.
+
 ## Getting Started
 
 The project is developed using the basic capabilities of Godot Engine's custom C++ modules.
@@ -29,7 +33,34 @@ Based on this capability, we can directly use C++ to implement code without worr
 Since GDWeb3 has not yet been merged into the main branch of Godot (this may become possible in the future), you need to recompile the engine or use our precompiled engine program.
 
 ### Compiling from Source
+
+#### 1. Setup Godot Engine compilation environment
+[Building from Source](https://docs.godotengine.org/en/stable/contributing/development/compiling/index.html)
+
+You can refer to this tutorial to set up your own Godot Engine compilation environment. Trust me, it's unbelievably simple! Definitely worth a try!
+
+#### 2. Clone our project
+```
+git clone https://github.com/qingfengzxr/gdscript-web3.git
+```
+
+#### 3. Copy web3 module
+Copy web3 directory into Godot Engine project's modules directory.
+
+```
+cp -rf ~/gdscript-web3/modules/web3 ~/godot/modules
+```
+> Don't forget to replace your own path
+
+#### 4. Install gmp library
 TODO
+
+#### 5. Compile Godot Engine
+MacOS:
+```
+scons platform=osx arch=arm64
+```
+
 
 ### Using the Released Version
 TODO
