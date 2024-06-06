@@ -11,20 +11,36 @@
 #include "core/error/error_macros.h"
 #include "core/error/error_list.h"
 
-class BigInt : public RefCounted {
-	GDCLASS(BigInt, RefCounted);
 
-	mpz_t m_number;
+class BigInt : public RefCounted {
+    GDCLASS(BigInt, RefCounted);
 
 protected:
-	static void _bind_methods();
+    static void _bind_methods();
 
 public:
-	BigInt();
-	~BigInt();
+    mpz_t m_number;
 
-	void test_add();
-	// TODO: need to support return BigInt object
+    BigInt();
+    ~BigInt();
+
+    void from_string(String str);
+    String get_string();
+	String to_hex();
+
+    Ref<BigInt> add(const Ref<BigInt> other);
+    Ref<BigInt> sub(const Ref<BigInt> other);
+    Ref<BigInt> mul(const Ref<BigInt> other);
+    Ref<BigInt> div(const Ref<BigInt> other);
+    Ref<BigInt> mod(const Ref<BigInt> other);
+    Ref<BigInt> abs();
+
+	// return int, meaning:
+	// < 0: this < other
+	// > 0: this > other
+	// = 0: this = other
+	int cmp(const Ref<BigInt> other);
+	int sgn();
 };
 
 #endif // BIG_INT_H
