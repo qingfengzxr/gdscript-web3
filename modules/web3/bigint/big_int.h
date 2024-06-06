@@ -12,19 +12,31 @@
 #include "core/error/error_list.h"
 
 class BigInt : public RefCounted {
-	GDCLASS(BigInt, RefCounted);
-
-	mpz_t m_number;
+    GDCLASS(BigInt, RefCounted);
 
 protected:
-	static void _bind_methods();
+    static void _bind_methods();
 
 public:
-	BigInt();
-	~BigInt();
+    mpz_t m_number;
 
-	void test_add();
-	// TODO: need to support return BigInt object
+    BigInt();
+    ~BigInt();
+
+    void from_string(String str);
+    String get_string();
+
+    Ref<BigInt> add(const Ref<BigInt> other);
+    Ref<BigInt> sub(const Ref<BigInt> other);
+    Ref<BigInt> mul(const Ref<BigInt> other);
+    Ref<BigInt> div(const Ref<BigInt> other);
+    Ref<BigInt> mod(const Ref<BigInt> other);
+
+	// return int, meaning:
+	// < 0: this < other
+	// > 0: this > other
+	// = 0: this = other
+	int cmp(const Ref<BigInt> other);
 };
 
 #endif // BIG_INT_H
