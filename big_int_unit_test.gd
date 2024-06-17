@@ -1,7 +1,7 @@
 extends Label
 
 # The test case
-func test_big_int_operations():
+func test_expected_behavior():
 	print("------> start test big int operations <------")
 	var a = BigInt.new()
 	a.from_string("12345678901234567890")
@@ -37,9 +37,14 @@ func test_big_int_operations():
 	print("------> test big int operations done <------")
 	pass
 
+func test_unexpected_behavior():
+	pass
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	test_big_int_operations()
+	test_expected_behavior()
+	test_unexpected_behavior()
 	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

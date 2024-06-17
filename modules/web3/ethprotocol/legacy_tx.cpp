@@ -144,25 +144,31 @@ PackedByteArray LegacyTx::rlp_hash() {
 		size_t data_len = m_data.size();
 		ERR_FAIL_COND_V_MSG(eth_rlp_bytes(&rlp0, &data_bytes, &data_len) < 0, PackedByteArray(), "rlp foramt data bytes failed");
 
-		// rlp format for chain id
+		// rlp format for chain id(v)
+		ERR_FAIL_COND_V_MSG(m_chain_id->is_zero(), PackedByteArray(), "rlp format failed: chain id should not be zero");
 		char *m_chain_id_cstr = const_cast<char*>(m_chain_id->to_hex().utf8().get_data());
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_chain_id_cstr, NULL) < 0, PackedByteArray(), "rlp format chain id failed");
 
-		// rlp format for last double zero
+		// rlp format for r,s
 		uint8_t zero=0;
-		ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format zero_1 failed");
-		ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format zero_2 failed");
+		if (m_r.is_null() || m_r->is_zero()) {
+			ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format r(zero) failed");
+		} else {
+			char *m_r_cstr = const_cast<char*>(m_r->to_hex().utf8().get_data());
+			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_r_cstr, NULL) < 0, PackedByteArray(), "rlp format r failed");
+		}
+
+		if (m_r.is_null() || m_s->is_zero()) {
+			ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format s(zero) failed");
+		} else {
+			char *m_s_cstr = const_cast<char*>(m_s->to_hex().utf8().get_data());
+			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_s_cstr, NULL) < 0, PackedByteArray(), "rlp format s failed");
+		}
+
 	ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_to_bytes(&rlp0_bytes, &rlp0_len, &rlp0) < 0, PackedByteArray(), "eth_rlp_to_bytes failed");
 	ERR_FAIL_COND_V_MSG(eth_rlp_free(&rlp0) < 0, PackedByteArray(), "eth_rlp_free failed");
-
-	// print rlp bytes in hexadecimal
-	printf("debug print rlp bytes:"); // todo: delete debug
-    for(size_t i = 0; i < rlp0_len; i++) {
-        printf("%02x", rlp0_bytes[i]);
-    }
-    printf("\n");
 
 	// compute the keccak hash of the rlp encoded transaction
 	uint8_t hash[32];
@@ -178,6 +184,100 @@ PackedByteArray LegacyTx::rlp_hash() {
 
 String LegacyTx::get_nonce_hex() const {
     return uint64_to_hex_string(this->m_nonce);
+}
+
+
+int LegacyTx::sign_tx(Ref<Secp256k1Wrapper> signer) {
+	// FIXME: does it need to check the signer is valid?
+	// FIXME: does it need to check the LegacyTx data is valid?
+	PackedByteArray rlp_hash = this->rlp_hash();
+	PackedByteArray signature = signer->sign(rlp_hash);
+
+	if (signature.size() != 65) {
+		return -1;
+	}
+
+	uint8_t _signature[65];
+	memcpy(_signature, signature.ptr(), 65);
+
+	// Get the r, s, and v values from the signature and caculate v
+	uint8_t r[32];
+	uint8_t s[32];
+	memcpy(r, _signature, 32);
+	memcpy(s, _signature + 32, 32);
+
+	int v_value = signature[64] + 35 + 2 * this->get_chain_id()->to_int();
+	String v_value_str = String::num(v_value);
+
+	// Set the r, s, and v values
+	Ref<BigInt> r_bigint = memnew(BigInt);
+	Ref<BigInt> s_bigint = memnew(BigInt);
+	Ref<BigInt> v_bigint = memnew(BigInt);
+	r_bigint->set_bytes(r, 32);
+	s_bigint->set_bytes(s, 32);
+	v_bigint->from_string(v_value_str);
+
+	this->set_sign_r(r_bigint);
+	this->set_sign_s(s_bigint);
+	this->set_sign_v(v_bigint);
+	return 0;
+}
+
+String LegacyTx::signedtx_marshal_binary() {
+	struct eth_rlp rlp0;
+
+	// Get the rlp format of the transaction
+	ERR_FAIL_COND_V_MSG(eth_rlp_init(&rlp0, ETH_RLP_ENCODE) < 0, String(), "eth_rlp_init failed");
+
+	ERR_FAIL_COND_V_MSG(eth_rlp_array(&rlp0) < 0, String(), "eth_rlp_array failed");
+		// rlp format for nonce
+		char* nonce = const_cast<char*>(this->get_nonce_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &nonce, NULL) < 0, String(), "rlp format nonce failed");
+
+		// rlp format for gas price
+		char *gas_price_cstr = const_cast<char*>(m_gas_price->to_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_price_cstr, NULL) < 0, String(), "rlp format gas price failed");
+
+		// rlp format for gas limit
+		char *gas_limit = const_cast<char*>(uint64_to_hex_string(this->m_gas_limit).utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_limit, NULL) < 0, String(), "rlp format gas limit failed");
+
+		// rlp format for to address
+		char *to_cstr = const_cast<char*>(m_to.utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to_cstr) < 0, String(), "rlp format to address failed");
+
+		// rlp format for value
+		char *value_cstr = const_cast<char*>(m_value->to_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &value_cstr, NULL) < 0, String(), "rlp format value failed");
+
+		// rlp format for data
+		uint8_t *data_bytes = new uint8_t[m_data.size()];
+		memcpy(data_bytes, m_data.ptr(), m_data.size());
+		size_t data_len = m_data.size();
+		ERR_FAIL_COND_V_MSG(eth_rlp_bytes(&rlp0, &data_bytes, &data_len) < 0, String(), "rlp foramt data bytes failed");
+
+		// rlp format for v
+		ERR_FAIL_COND_V_MSG(m_v->is_zero(), String(), "rlp format failed: chain id should not be zero");
+		char *m_v_cstr = const_cast<char*>(m_v->to_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_v_cstr, NULL) < 0, String(), "rlp format chain id failed");
+
+		// rlp format for r
+		ERR_FAIL_COND_V_MSG(m_r.is_null(), String(), "rlp format failed: r is zero");
+		char *m_r_cstr = const_cast<char*>(m_r->to_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_r_cstr, NULL) < 0, String(), "rlp format r failed");
+
+		// rlp format for s
+
+		ERR_FAIL_COND_V_MSG(m_s.is_null(), String(), "rlp format failed: r is zero");
+		char *m_s_cstr = const_cast<char*>(m_s->to_hex().utf8().get_data());
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_s_cstr, NULL) < 0, String(), "rlp format s failed");
+
+	ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, String(), "eth_rlp_array failed");
+
+	char *txn;
+	ERR_FAIL_COND_V_MSG(eth_rlp_to_hex(&txn, &rlp0) < 0, String(), "eth_rlp_to_hex failed");
+	ERR_FAIL_COND_V_MSG(eth_rlp_free(&rlp0) < 0, String(), "eth_rlp_free failed");
+	return String(txn);
 }
 
 
@@ -214,5 +314,7 @@ void LegacyTx::_bind_methods() {
 
 
 	ClassDB::bind_method(D_METHOD("rlp_hash"), &LegacyTx::rlp_hash);
+	ClassDB::bind_method(D_METHOD("sign_tx"), &LegacyTx::sign_tx);
+	ClassDB::bind_method(D_METHOD("signedtx_marshal_binary"), &LegacyTx::signedtx_marshal_binary);
 }
 

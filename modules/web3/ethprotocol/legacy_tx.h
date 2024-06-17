@@ -68,6 +68,8 @@ public:
 
 	// TODO: @cooper, support transaction functions
 	PackedByteArray rlp_hash();
+	int sign_tx(Ref<Secp256k1Wrapper> signer);
+	String signedtx_marshal_binary();
 	String get_nonce_hex() const;
 };
 

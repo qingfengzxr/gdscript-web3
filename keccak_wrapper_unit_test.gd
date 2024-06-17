@@ -4,7 +4,7 @@ extends Label
 func test_expected_behavior():
 	print("------> start test keccak wrapper expected behavior <------")
 	var keccak = KeccakWrapper.new()
-	
+
 	var data = "Hello, web3!"
 	var hash = keccak.keccak256_hash(data.to_utf8_buffer())
 	print("get keccak hash: ", hash.hex_encode())
@@ -14,9 +14,13 @@ func test_expected_behavior():
 	print("------> test keccak wrapper expected behavior <------")
 	pass
 
+func test_unexpected_behavior():
+	pass
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	test_expected_behavior()
+	test_unexpected_behavior()
 	pass # Replace with function body.
 
 
