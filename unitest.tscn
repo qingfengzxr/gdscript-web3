@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://biyptoci8rfi7"]
+[gd_scene load_steps=5 format=3 uid="uid://biyptoci8rfi7"]
 
 [ext_resource type="Script" path="res://keccak_wrapper_unit_test.gd" id="1_kyujt"]
 [ext_resource type="Script" path="res://secp256k1_wrapper_unit_test.gd" id="2_qiyr0"]
 [ext_resource type="Script" path="res://big_int_unit_test.gd" id="3_k8ri3"]
+[ext_resource type="Script" path="res://legacy_tx_unit_test.gd" id="4_4c6t5"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -20,3 +21,8 @@ script = ExtResource("2_qiyr0")
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("3_k8ri3")
+
+[node name="LegacyTxUnitTest" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("4_4c6t5")

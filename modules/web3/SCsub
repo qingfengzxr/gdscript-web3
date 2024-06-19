@@ -35,9 +35,10 @@ module_env.add_source_files(env.modules_sources, "bigint/*.cpp")
 # - Append CXXFLAGS for C++ code only.
 module_env.Append(CCFLAGS=['-O2', '-Wno-unused-function'])
 # Add the paths and libraries to the environment
-module_env.Append(CPPPATH=include_paths + ['./libsecp256k1/include',
-                                           './libsecp256k1/src/modules/recovery',
-                                           './libsecp256k1/src/modules/ecdh',
+module_env.Append(CPPPATH=include_paths + ["./",
+                                           "./libsecp256k1/include",
+                                           "./libsecp256k1/src/modules/recovery",
+                                           "./libsecp256k1/src/modules/ecdh",
                                            "./libsecp256k1/src",
                                            "./libkeccak",
                                            "./ethprotocol",
