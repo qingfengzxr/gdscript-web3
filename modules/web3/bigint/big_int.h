@@ -11,7 +11,6 @@
 #include "core/error/error_macros.h"
 #include "core/error/error_list.h"
 
-
 class BigInt : public RefCounted {
     GDCLASS(BigInt, RefCounted);
 
