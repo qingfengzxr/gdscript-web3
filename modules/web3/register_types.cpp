@@ -8,6 +8,7 @@
 #include "optimism.h"
 #include "legacy_tx.h"
 #include "big_int.h"
+#include "jsonrpc_helper.h"
 
 void initialize_web3_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -19,6 +20,7 @@ void initialize_web3_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<KeccakWrapper>();
 	ClassDB::register_class<LegacyTx>();
 	ClassDB::register_class<BigInt>();
+	ClassDB::register_class<JsonrpcHelper>();
 }
 
 void uninitialize_web3_module(ModuleInitializationLevel p_level) {
