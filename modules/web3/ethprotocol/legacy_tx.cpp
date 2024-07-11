@@ -210,9 +210,9 @@ int LegacyTx::sign_tx(Ref<Secp256k1Wrapper> signer) {
 	String v_value_str = String::num(v_value);
 
 	// Set the r, s, and v values
-	Ref<BigInt> r_bigint = memnew(BigInt);
-	Ref<BigInt> s_bigint = memnew(BigInt);
-	Ref<BigInt> v_bigint = memnew(BigInt);
+	Ref<BigInt> r_bigint = Ref<BigInt>(memnew(BigInt));
+	Ref<BigInt> s_bigint = Ref<BigInt>(memnew(BigInt));
+	Ref<BigInt> v_bigint = Ref<BigInt>(memnew(BigInt));
 	r_bigint->set_bytes(r, 32);
 	s_bigint->set_bytes(s, 32);
 	v_bigint->from_string(v_value_str);
@@ -277,7 +277,10 @@ String LegacyTx::signedtx_marshal_binary() {
 	char *txn;
 	ERR_FAIL_COND_V_MSG(eth_rlp_to_hex(&txn, &rlp0) < 0, String(), "eth_rlp_to_hex failed");
 	ERR_FAIL_COND_V_MSG(eth_rlp_free(&rlp0) < 0, String(), "eth_rlp_free failed");
-	return String(txn);
+
+	String res = String(txn);
+	free(txn);
+	return "0x" + res;
 }
 
 

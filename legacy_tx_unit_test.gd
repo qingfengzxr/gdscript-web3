@@ -44,7 +44,7 @@ func test_expected_behavior():
 	print("s: ",legacyTx.get_sign_s().get_string())
 	var enc_string = legacyTx.signedtx_marshal_binary()
 	print("signed marshal binary result: ", enc_string)
-	assert(enc_string == "f8708203e88504a817c800825204943535353535353535353535353535353535353535880de0b6b3a76400000182f4f6a06564d364f0e020e351466f4005209a376d15dfba0234e712a8f7fffe801247a8a025bede6451fd2a5a6f44ae791e1729bd4e46cb05bc4e62028c23e541b9b84f8b", "marshalbinary result incorrect")
+	assert(enc_string == "0xf8708203e88504a817c800825204943535353535353535353535353535353535353535880de0b6b3a76400000182f4f6a06564d364f0e020e351466f4005209a376d15dfba0234e712a8f7fffe801247a8a025bede6451fd2a5a6f44ae791e1729bd4e46cb05bc4e62028c23e541b9b84f8b", "marshalbinary result incorrect")
 	print("pass: marshalbinary success!")
 	print("------> test legacy tx operations done <------")
 	pass

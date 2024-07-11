@@ -5,15 +5,19 @@
 #include "libsecp256k1/include/ext.h"
 
 Secp256k1Wrapper::Secp256k1Wrapper() {
-	;
+	m_ctx = nullptr;
+
+	initialize();
 }
 
 Secp256k1Wrapper::~Secp256k1Wrapper() {
-	secp256k1_context_destroy(ctx);
+	if (m_ctx != nullptr) {
+		secp256k1_context_destroy(m_ctx);
+	}
 }
 
 bool Secp256k1Wrapper::initialize() {
-	ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+	m_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
 
 	unsigned char randomize[32];
 
@@ -23,7 +27,7 @@ bool Secp256k1Wrapper::initialize() {
 		"Failed to generate randomness"
 	);
 
-	int return_val = secp256k1_context_randomize(ctx, randomize);
+	int return_val = secp256k1_context_randomize(m_ctx, randomize);
 	ERR_FAIL_COND_V_MSG(return_val != 1, FAILED, "Failed to randomize context");
 	return true;
 }
@@ -132,18 +136,18 @@ bool Secp256k1Wrapper::generate_key_pair() {
 	while (1) {
 		ERR_FAIL_COND_V_MSG(!fill_random(seckey, sizeof(seckey)), false, "Failed to generate randomness");
 
-		if (secp256k1_ec_seckey_verify(ctx, seckey)) {
+		if (secp256k1_ec_seckey_verify(m_ctx, seckey)) {
 			break;
 		}
 	}
 
 	/* Compute the public key from a secret key. */
-	ERR_FAIL_COND_V_MSG(!secp256k1_ec_pubkey_create(ctx, &pubkey, seckey), false, "Failed to create public key");
+	ERR_FAIL_COND_V_MSG(!secp256k1_ec_pubkey_create(m_ctx, &pubkey, seckey), false, "Failed to create public key");
 
 	// serialize the public key
 	unsigned char serialize_pubkey[65];
 	size_t outputlen = 65;
-	secp256k1_ec_pubkey_serialize(ctx, serialize_pubkey, &outputlen, &pubkey, SECP256K1_EC_UNCOMPRESSED);
+	secp256k1_ec_pubkey_serialize(m_ctx, serialize_pubkey, &outputlen, &pubkey, SECP256K1_EC_UNCOMPRESSED);
 
 	// save to class member
 	m_secret_key.clear();
@@ -167,10 +171,10 @@ bool Secp256k1Wrapper::compute_public_key_from_seckey() {
 		seckey[i] = m_secret_key[i];
 	}
 
-	ERR_FAIL_COND_V_MSG(!secp256k1_ec_seckey_verify(ctx, seckey), false, "Invalid secret key");
+	ERR_FAIL_COND_V_MSG(!secp256k1_ec_seckey_verify(m_ctx, seckey), false, "Invalid secret key");
 
 	secp256k1_pubkey pubkey;
-	if (!secp256k1_ec_pubkey_create(ctx, &pubkey, seckey)) {
+	if (!secp256k1_ec_pubkey_create(m_ctx, &pubkey, seckey)) {
 		ERR_PRINT("Failed to create public key");
 		return false;
 	}
@@ -178,7 +182,7 @@ bool Secp256k1Wrapper::compute_public_key_from_seckey() {
 	// serialize the public key
 	unsigned char serialize_pubkey[65];
 	size_t outputlen = 65;
-	secp256k1_ec_pubkey_serialize(ctx, serialize_pubkey, &outputlen, &pubkey, SECP256K1_EC_UNCOMPRESSED);
+	secp256k1_ec_pubkey_serialize(m_ctx, serialize_pubkey, &outputlen, &pubkey, SECP256K1_EC_UNCOMPRESSED);
 
 	m_public_key.clear();
 	for (size_t i = 0; i < sizeof(serialize_pubkey); ++i) {
@@ -198,7 +202,7 @@ PackedByteArray Secp256k1Wrapper::sign(const PackedByteArray &message) {
 		seckey[i] = m_secret_key[i];
 	}
 
-	ERR_FAIL_COND_V_MSG(secp256k1_ec_seckey_verify(ctx, seckey) != 1, PackedByteArray(), "Invalid secret key");
+	ERR_FAIL_COND_V_MSG(secp256k1_ec_seckey_verify(m_ctx, seckey) != 1, PackedByteArray(), "Invalid secret key");
 
 	// convert PackedByteArray data to unsigned char
 	unsigned char sign_msg[32];
@@ -208,14 +212,14 @@ PackedByteArray Secp256k1Wrapper::sign(const PackedByteArray &message) {
 
 	secp256k1_ecdsa_recoverable_signature signature_output;
 
-	int return_val = secp256k1_ecdsa_sign_recoverable(ctx, &signature_output, sign_msg, seckey, NULL, NULL);
+	int return_val = secp256k1_ecdsa_sign_recoverable(m_ctx, &signature_output, sign_msg, seckey, NULL, NULL);
 	ERR_FAIL_COND_V_MSG(return_val != 1, PackedByteArray(), "Failed to sign message");
 
 	// compact signature output
 	int recid;
 	unsigned char compact_sig[65];
 	unsigned char *sigdata = &compact_sig[0];
-	secp256k1_ecdsa_recoverable_signature_serialize_compact(ctx, sigdata, &recid, &signature_output);
+	secp256k1_ecdsa_recoverable_signature_serialize_compact(m_ctx, sigdata, &recid, &signature_output);
 	compact_sig[64] = recid;
 
 	// convert compact signature data to PackedByteArray
@@ -250,7 +254,7 @@ bool Secp256k1Wrapper::verify(const PackedByteArray &message, const PackedByteAr
 		key_data[i] = m_public_key[i];
 	}
 
-	int return_val = secp256k1_ext_ecdsa_verify(ctx, sign_data, msg_data, key_data, m_public_key.size());
+	int return_val = secp256k1_ext_ecdsa_verify(m_ctx, sign_data, msg_data, key_data, m_public_key.size());
 	ERR_FAIL_COND_V_MSG(return_val != 1, false, "Signature verification failed");
 
 	return true;
@@ -274,7 +278,7 @@ PackedByteArray Secp256k1Wrapper::recover_pubkey(const PackedByteArray &message,
 	}
 
 	unsigned char pubkey_out[65];
-	int ret_val = secp256k1_ext_ecdsa_recover(ctx, pubkey_out, sig_data, msg_data);
+	int ret_val = secp256k1_ext_ecdsa_recover(m_ctx, pubkey_out, sig_data, msg_data);
 	if (ret_val != 1) {
 		ERR_PRINT("Failed to recover public key");
 		return PackedByteArray();

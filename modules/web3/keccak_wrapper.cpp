@@ -26,6 +26,6 @@ PackedByteArray KeccakWrapper::keccak256_hash(const PackedByteArray &data) {
 }
 
 void KeccakWrapper::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("keccak256_hash"), &KeccakWrapper::keccak256_hash);
+	ClassDB::bind_method(D_METHOD("keccak256_hash", "data"), &KeccakWrapper::keccak256_hash);
 }
 
