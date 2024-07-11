@@ -14,12 +14,15 @@
 
 #include "secp256k1_wrapper.h"
 #include "keccak_wrapper.h"
+#include "jsonrpc_helper.h"
+#include "big_int.h"
 
 class Optimism : public RefCounted {
 	GDCLASS(Optimism, RefCounted);
 
 	Ref<Secp256k1Wrapper> m_secp256k1;
 	Ref<KeccakWrapper> m_keccak;
+	Ref<JsonrpcHelper> m_jsonrpc_helper;
 
 protected:
 	static void _bind_methods();
@@ -32,6 +35,25 @@ public:
 
 	Ref<Secp256k1Wrapper> get_secp256k1_wrapper();
 	Ref<KeccakWrapper> get_keccak_wrapper();
+
+	// sync jsonrpc request method, base on JsonrpcHelper class
+
+	Dictionary chain_id(const Variant &id);
+	Dictionary block_by_hash(const String &hash, const Variant &id);
+	Dictionary block_by_number(const Ref<BigInt> &number, const Variant &id);
+	Dictionary block_number(const Variant &id);
+	Dictionary send_transaction(const String &signed_tx, const Variant &id);
+	// TODO: PeerCount()
+	// TODO: BlockReceipts()
+	Dictionary header_by_hash(const String &hash, const Variant &id);
+	Dictionary header_by_number(const Ref<BigInt> &number, const Variant &id);
+
+
+	// async jsonrpc request method, base on JSONRPC class.
+	// Only return request dictionary
+
+	Dictionary async_block_number(const Variant &id);
+	Dictionary async_send_transaction(const String &signed_tx, const Variant &id);
 };
 
 #endif // OPTIMISM_H

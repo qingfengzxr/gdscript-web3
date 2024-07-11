@@ -2,7 +2,7 @@ extends Label
 
 # The test case
 func test_expected_behavior():
-	print("------> start test secp256kq wrapper expected behavior <------")
+	print("------> start test secp256k1 wrapper expected behavior <------")
 	var secp256k1 = Secp256k1Wrapper.new()
 	assert(secp256k1.initialize(), "secp256k1 initialized failed!")
 	print("pass: secp256k1 initialized success!")

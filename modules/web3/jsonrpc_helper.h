@@ -14,17 +14,33 @@
 #include "core/io/json.h"
 #include "modules/jsonrpc/jsonrpc.h"
 
-class JsonrpcHelper : public JSONRPC {
-	GDCLASS(JsonrpcHelper, JSONRPC);
+class JsonrpcHelper : public RefCounted {
+	GDCLASS(JsonrpcHelper, RefCounted);
+
+	String m_hostname;
+	int m_port;
 
 protected:
 	static void _bind_methods();
 
 public:
+	enum RPCMethod {
+		ETH_BLOCKNUMBER,
+		ETH_SENDRAWTRANSACTION,
+		// ...
+	};
+
 	JsonrpcHelper();
 	~JsonrpcHelper();
 
-	String eth_block_number();
+	String get_hostname() const;
+	void set_hostname(const String &hostname);
+	int get_port() const;
+	void set_port(int port);
+
+	// base request method
+	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id);
+
 	String format_output(const String &p_text);
 };
 

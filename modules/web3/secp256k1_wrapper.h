@@ -87,7 +87,7 @@ public:
 	bool verify(const PackedByteArray &message, const PackedByteArray &signature);
 
 private:
-    secp256k1_context* ctx;
+    secp256k1_context* m_ctx;
     PackedByteArray m_secret_key;
     PackedByteArray m_public_key;
 	static int fill_random(unsigned char* data, size_t size);

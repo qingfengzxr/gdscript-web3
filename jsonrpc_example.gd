@@ -3,13 +3,18 @@ extends Node2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#first example: use c++ module
-	var jsonrpcHelper = JsonrpcHelper.new()
-	var output = jsonrpcHelper.eth_block_number()
-	print("example output: ", output)
+	# 1. First example: use c++ module
+	var op = Optimism.new()
+	var output = op.block_number("001")
+	var body1 = output["response_body"]
+
+	var json = JSON.new()
+	json.parse(body1.get_string_from_utf8())
+	var response = json.get_data()
+	print("example output: ", response)
 	return
 
-	#second example: use HTTPRequest scene
+	# 2. Second example: use HTTPRequest scene
 	# Create an HTTP request node and connect its completion signal.
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
@@ -20,6 +25,8 @@ func _ready():
 	# Note: Don't make simultaneous requests using a single HTTPRequest node.
 	# The snippet below is provided for reference only.
 	var body = JSON.new().stringify({"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id": "get_01"})
+	print("body: ", body)
+	print("type of body: ", typeof(body)) # output: String
 	var error = http_request.request("https://optimism.llamarpc.com", ['Content-Type: application/json'], HTTPClient.METHOD_POST, body)
 	if error != OK:
 		push_error("An error occurred in the HTTP request.")
