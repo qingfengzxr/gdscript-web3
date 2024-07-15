@@ -30,7 +30,7 @@ void JsonrpcHelper::set_port(int port) {
     m_port = port;
 }
 
-Dictionary JsonrpcHelper::call_method(const String &method, const Vector<String> &params, const Variant &id) {
+Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant> &params, const Variant &id) {
     HTTPClient *client = HTTPClient::create();
 
 	Dictionary call_result;
@@ -125,6 +125,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<String>
 		response_body_str = String::utf8((const char*)response_body.ptr(), response_body.size());
 	}
 
+	// TODO: Maybe returning the specified type is a better implementation
 	call_result["response_body"] = response_body;
 	// example output: Response body: {"jsonrpc":"2.0","id":1,"result":"0x74751e4"}
     printf("Debug! Response body: %s\n", response_body_str.utf8().get_data());
