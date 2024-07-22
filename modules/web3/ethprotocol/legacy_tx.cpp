@@ -119,24 +119,30 @@ PackedByteArray LegacyTx::rlp_hash() {
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_array(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
 		// rlp format for nonce
-		char* nonce = const_cast<char*>(this->get_nonce_hex().utf8().get_data());
+		// char* nonce = const_cast<char*>(this->get_nonce_hex().utf8().get_data());
+		CharString nonce_cstr = this->get_nonce_hex().utf8();
+		char* nonce = nonce_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &nonce, NULL) < 0, PackedByteArray(), "rlp format nonce failed");
 
 		// rlp format for gas price
-		char *gas_price_cstr = const_cast<char*>(m_gas_price->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_price_cstr, NULL) < 0, PackedByteArray(), "rlp format gas price failed");
+		CharString gas_price_cstr = m_gas_price->to_hex().utf8();
+		char *gas_price = gas_price_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_price, NULL) < 0, PackedByteArray(), "rlp format gas price failed");
 
 		// rlp format for gas limit
-		char *gas_limit = const_cast<char*>(uint64_to_hex_string(this->m_gas_limit).utf8().get_data());
+		CharString gas_limit_cstr = uint64_to_hex_string(this->m_gas_limit).utf8();
+		char *gas_limit = gas_limit_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_limit, NULL) < 0, PackedByteArray(), "rlp format gas limit failed");
 
 		// rlp format for to address
-		char *to_cstr = const_cast<char*>(m_to.utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to_cstr) < 0, PackedByteArray(), "rlp format to address failed");
+		CharString to_cstr = m_to.utf8();
+		char *to = to_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to) < 0, PackedByteArray(), "rlp format to address failed");
 
 		// rlp format for value
-		char *value_cstr = const_cast<char*>(m_value->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &value_cstr, NULL) < 0, PackedByteArray(), "rlp format value failed");
+		CharString value_cstr = m_value->to_hex().utf8();
+		char *value = value_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &value, NULL) < 0, PackedByteArray(), "rlp format value failed");
 
 		// rlp format for data
 		uint8_t *data_bytes = new uint8_t[m_data.size()];
@@ -146,23 +152,26 @@ PackedByteArray LegacyTx::rlp_hash() {
 
 		// rlp format for chain id(v)
 		ERR_FAIL_COND_V_MSG(m_chain_id->is_zero(), PackedByteArray(), "rlp format failed: chain id should not be zero");
-		char *m_chain_id_cstr = const_cast<char*>(m_chain_id->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_chain_id_cstr, NULL) < 0, PackedByteArray(), "rlp format chain id failed");
+		CharString chain_id_cstr = m_chain_id->to_hex().utf8();
+		char *chain_id = chain_id_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &chain_id, NULL) < 0, PackedByteArray(), "rlp format chain id failed");
 
 		// rlp format for r,s
 		uint8_t zero=0;
 		if (m_r.is_null() || m_r->is_zero()) {
 			ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format r(zero) failed");
 		} else {
-			char *m_r_cstr = const_cast<char*>(m_r->to_hex().utf8().get_data());
-			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_r_cstr, NULL) < 0, PackedByteArray(), "rlp format r failed");
+			CharString r_cstr = m_r->to_hex().utf8();
+			char *r = r_cstr.ptrw();
+			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &r, NULL) < 0, PackedByteArray(), "rlp format r failed");
 		}
 
 		if (m_r.is_null() || m_s->is_zero()) {
 			ERR_FAIL_COND_V_MSG(eth_rlp_uint8(&rlp0, &zero) < 0, PackedByteArray(), "rlp format s(zero) failed");
 		} else {
-			char *m_s_cstr = const_cast<char*>(m_s->to_hex().utf8().get_data());
-			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_s_cstr, NULL) < 0, PackedByteArray(), "rlp format s failed");
+			CharString s_cstr = m_s->to_hex().utf8();
+			char *s = s_cstr.ptrw();
+			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &s, NULL) < 0, PackedByteArray(), "rlp format s failed");
 		}
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
@@ -231,24 +240,29 @@ String LegacyTx::signedtx_marshal_binary() {
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_array(&rlp0) < 0, String(), "eth_rlp_array failed");
 		// rlp format for nonce
-		char* nonce = const_cast<char*>(this->get_nonce_hex().utf8().get_data());
+		CharString nonce_cstr = this->get_nonce_hex().utf8();
+		char* nonce = nonce_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &nonce, NULL) < 0, String(), "rlp format nonce failed");
 
 		// rlp format for gas price
-		char *gas_price_cstr = const_cast<char*>(m_gas_price->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_price_cstr, NULL) < 0, String(), "rlp format gas price failed");
+		CharString gas_price_cstr = m_gas_price->to_hex().utf8();
+		char *gas_price = gas_price_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_price, NULL) < 0, String(), "rlp format gas price failed");
 
 		// rlp format for gas limit
-		char *gas_limit = const_cast<char*>(uint64_to_hex_string(this->m_gas_limit).utf8().get_data());
+		CharString gas_limit_cstr = uint64_to_hex_string(this->m_gas_limit).utf8();
+		char *gas_limit = gas_limit_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_limit, NULL) < 0, String(), "rlp format gas limit failed");
 
 		// rlp format for to address
-		char *to_cstr = const_cast<char*>(m_to.utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to_cstr) < 0, String(), "rlp format to address failed");
+		CharString to_cstr = m_to.utf8();
+		char *to = to_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to) < 0, String(), "rlp format to address failed");
 
 		// rlp format for value
-		char *value_cstr = const_cast<char*>(m_value->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &value_cstr, NULL) < 0, String(), "rlp format value failed");
+		CharString value_cstr = m_value->to_hex().utf8();
+		char *value = value_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &value, NULL) < 0, String(), "rlp format value failed");
 
 		// rlp format for data
 		uint8_t *data_bytes = new uint8_t[m_data.size()];
@@ -258,19 +272,21 @@ String LegacyTx::signedtx_marshal_binary() {
 
 		// rlp format for v
 		ERR_FAIL_COND_V_MSG(m_v->is_zero(), String(), "rlp format failed: chain id should not be zero");
-		char *m_v_cstr = const_cast<char*>(m_v->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_v_cstr, NULL) < 0, String(), "rlp format chain id failed");
+		CharString v_cstr = m_v->to_hex().utf8();
+		char *v = v_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &v, NULL) < 0, String(), "rlp format chain id failed");
 
 		// rlp format for r
 		ERR_FAIL_COND_V_MSG(m_r.is_null(), String(), "rlp format failed: r is zero");
-		char *m_r_cstr = const_cast<char*>(m_r->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_r_cstr, NULL) < 0, String(), "rlp format r failed");
+		CharString r_cstr = m_r->to_hex().utf8();
+		char *r = r_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &r, NULL) < 0, String(), "rlp format r failed");
 
 		// rlp format for s
-
 		ERR_FAIL_COND_V_MSG(m_s.is_null(), String(), "rlp format failed: r is zero");
-		char *m_s_cstr = const_cast<char*>(m_s->to_hex().utf8().get_data());
-		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &m_s_cstr, NULL) < 0, String(), "rlp format s failed");
+		CharString s_cstr = m_s->to_hex().utf8();
+		char *s = s_cstr.ptrw();
+		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &s, NULL) < 0, String(), "rlp format s failed");
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, String(), "eth_rlp_array failed");
 
@@ -285,13 +301,13 @@ String LegacyTx::signedtx_marshal_binary() {
 
 
 void LegacyTx::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_chain_id"), &LegacyTx::set_chain_id);
+	ClassDB::bind_method(D_METHOD("set_chain_id", "chain_id"), &LegacyTx::set_chain_id);
 	ClassDB::bind_method(D_METHOD("get_chain_id"), &LegacyTx::get_chain_id);
 
-	ClassDB::bind_method(D_METHOD("set_nonce"), &LegacyTx::set_nonce);
+	ClassDB::bind_method(D_METHOD("set_nonce", "nonce"), &LegacyTx::set_nonce);
 	ClassDB::bind_method(D_METHOD("get_nonce"), &LegacyTx::get_nonce);
 
-	ClassDB::bind_method(D_METHOD("set_gas_price"), &LegacyTx::set_gas_price);
+	ClassDB::bind_method(D_METHOD("set_gas_price", "gas_price"), &LegacyTx::set_gas_price);
 	ClassDB::bind_method(D_METHOD("get_gas_price"), &LegacyTx::get_gas_price);
 
     ClassDB::bind_method(D_METHOD("get_gas_limit"), &LegacyTx::get_gas_limit);
