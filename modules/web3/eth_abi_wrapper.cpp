@@ -12,50 +12,92 @@ EthABIWrapper::~EthABIWrapper() {
 
 
 void EthABIWrapper::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("float_plus"), &EthABIWrapper::float_plus);
 	ClassDB::bind_method(D_METHOD("encode"), &EthABIWrapper::encode);
 	ClassDB::bind_method(D_METHOD("decode"), &EthABIWrapper::decode);
 }
 
-float EthABIWrapper::float_plus(float a, float b)
-{
-	return a + b;
+PackedByteArray EthABIWrapper::encode(const String& type, Variant value) {
+	if (type == "int") {
+		return eth_abi_encode_int(value);
+	}
+	else if (type == "bool") {
+		return eth_abi_encode_bool(value);
+	}
 }
 
-PackedByteArray EthABIWrapper::encode(int a) {
+Variant EthABIWrapper::decode(const String& type, const String& value) {
+	if (type == "int") {
+		return eth_abi_decode_int(value);
+	}
+	else if (type == "bool") {
+		return eth_abi_decode_bool(value);
+	}
+}
+
+PackedByteArray EthABIWrapper::eth_abi_encode_int(Variant value) {
 	struct eth_abi data;
-	uint8_t aa = (uint8_t)a;
 	size_t hexlen;
 	char* hex;
+	int64_t _value = (int64_t)value;
 	eth_abi_init(&data, ETH_ABI_ENCODE);
-	eth_abi_uint8(&data, &aa);
+	eth_abi_int64(&data, &_value);
 	eth_abi_to_hex(&data, &hex, &hexlen);
 	eth_abi_free(&data);
-
-	std::cout << "HEX LEN: " << hexlen << ", HEX: " << *hex << ", " << hex << std::endl;
-
+	std::cout << "INT64 HEX LEN: " << hexlen << ", HEX: " << *hex << ", " << hex << std::endl;
 	PackedByteArray result;
 	hexStringToPackedByteArray(hex, result);
 	return result;
 }
 
-int EthABIWrapper::decode(const String& a) {
+PackedByteArray EthABIWrapper::eth_abi_encode_bool(Variant value) {
 	struct eth_abi data;
-	uint8_t aa;
-	// char* hex = packedByteArrayToHexString(a);
+	size_t hexlen;
+	char* hex;
+	uint8_t _value = (uint8_t)value;
+	eth_abi_init(&data, ETH_ABI_ENCODE);
+	eth_abi_bool(&data, &_value);
+	eth_abi_to_hex(&data, &hex, &hexlen);
+	eth_abi_free(&data);
+	std::cout << "BOOL HEX LEN: " << hexlen << ", HEX: " << *hex << ", " << hex << std::endl;
+	PackedByteArray result;
+	hexStringToPackedByteArray(hex, result);
+	return result;
+}
 
-	CharString utf8_str = a.utf8();
+Variant EthABIWrapper::eth_abi_decode_int(const String& value) {
+    struct eth_abi data;
+    int64_t res;
+    CharString utf8_str = value.utf8();
+    size_t length = utf8_str.length();
+    char* hex = new char[length + 1];
+    std::copy(utf8_str.get_data(), utf8_str.get_data() + length, hex);
+    hex[length] = '\0';
+
+    eth_abi_from_hex(&data, hex, -1);
+	eth_abi_int64(&data, &res);
+    eth_abi_free(&data);
+    int result = static_cast<int>(res);
+    std::cout << "PACKED: " << hex << ", " << *hex << ", Int64=" << static_cast<int>(res) << ", int=" << result << std::endl;
+    delete[] hex;
+    return Variant(result);
+}
+
+Variant EthABIWrapper::eth_abi_decode_bool(const String& value) {
+	struct eth_abi data;
+	uint8_t res;
+	CharString utf8_str = value.utf8();
 	size_t length = utf8_str.length();
 	char* hex = new char[length + 1];
 	std::copy(utf8_str.get_data(), utf8_str.get_data() + length, hex);
 	hex[length] = '\0';
 
 	eth_abi_from_hex(&data, hex, -1);
-	eth_abi_uint8(&data, &aa);
+	eth_abi_bool(&data, &res);
 	eth_abi_free(&data);
-	int result = static_cast<int>(aa);
-	std::cout << "PACKED: " << hex << ", " << *hex << ", uint8=" << aa << ", int=" << result << std::endl;
-	return result;
+	bool result = static_cast<int>(res);
+	std::cout << "PACKED: " << hex << ", " << *hex << ", Int64=" << static_cast<int>(res) << ", int=" << result << std::endl;
+	delete[] hex;
+	return Variant(result);
 }
 
 
