@@ -23,6 +23,12 @@ PackedByteArray EthABIWrapper::encode(const String& type, Variant value) {
 	else if (type == "bool") {
 		return eth_abi_encode_bool(value);
 	}
+	else if (type == "bytes") {
+		return eth_abi_encode_bytes(value);
+	}
+	else if (type == "address") {
+		return eth_abi_encode_address(value);
+	}
 }
 
 Variant EthABIWrapper::decode(const String& type, const String& value) {
@@ -31,6 +37,12 @@ Variant EthABIWrapper::decode(const String& type, const String& value) {
 	}
 	else if (type == "bool") {
 		return eth_abi_decode_bool(value);
+	}
+	else if (type == "bytes") {
+		return eth_abi_decode_bytes(value);
+	}
+	else if (type == "address") {
+		return eth_abi_decode_address(value);
 	}
 }
 
@@ -43,11 +55,30 @@ PackedByteArray EthABIWrapper::eth_abi_encode_int(Variant value) {
 	eth_abi_int64(&data, &_value);
 	eth_abi_to_hex(&data, &hex, &hexlen);
 	eth_abi_free(&data);
-	std::cout << "INT64 HEX LEN: " << hexlen << ", HEX: " << *hex << ", " << hex << std::endl;
 	PackedByteArray result;
 	hexStringToPackedByteArray(hex, result);
 	return result;
 }
+
+
+Variant EthABIWrapper::eth_abi_decode_int(const String& value) {
+	struct eth_abi data;
+	int64_t res;
+	CharString utf8_str = value.utf8();
+	size_t length = utf8_str.length();
+	char* hex = new char[length + 1];
+	std::copy(utf8_str.get_data(), utf8_str.get_data() + length, hex);
+	hex[length] = '\0';
+
+	eth_abi_from_hex(&data, hex, -1);
+	eth_abi_int64(&data, &res);
+	eth_abi_free(&data);
+	int result = static_cast<int>(res);
+	delete[] hex;
+	return Variant(result);
+}
+
+// ========================================================
 
 PackedByteArray EthABIWrapper::eth_abi_encode_bool(Variant value) {
 	struct eth_abi data;
@@ -58,28 +89,9 @@ PackedByteArray EthABIWrapper::eth_abi_encode_bool(Variant value) {
 	eth_abi_bool(&data, &_value);
 	eth_abi_to_hex(&data, &hex, &hexlen);
 	eth_abi_free(&data);
-	std::cout << "BOOL HEX LEN: " << hexlen << ", HEX: " << *hex << ", " << hex << std::endl;
 	PackedByteArray result;
 	hexStringToPackedByteArray(hex, result);
 	return result;
-}
-
-Variant EthABIWrapper::eth_abi_decode_int(const String& value) {
-    struct eth_abi data;
-    int64_t res;
-    CharString utf8_str = value.utf8();
-    size_t length = utf8_str.length();
-    char* hex = new char[length + 1];
-    std::copy(utf8_str.get_data(), utf8_str.get_data() + length, hex);
-    hex[length] = '\0';
-
-    eth_abi_from_hex(&data, hex, -1);
-	eth_abi_int64(&data, &res);
-    eth_abi_free(&data);
-    int result = static_cast<int>(res);
-    std::cout << "PACKED: " << hex << ", " << *hex << ", Int64=" << static_cast<int>(res) << ", int=" << result << std::endl;
-    delete[] hex;
-    return Variant(result);
 }
 
 Variant EthABIWrapper::eth_abi_decode_bool(const String& value) {
@@ -95,47 +107,97 @@ Variant EthABIWrapper::eth_abi_decode_bool(const String& value) {
 	eth_abi_bool(&data, &res);
 	eth_abi_free(&data);
 	bool result = static_cast<int>(res);
-	std::cout << "PACKED: " << hex << ", " << *hex << ", Int64=" << static_cast<int>(res) << ", int=" << result << std::endl;
 	delete[] hex;
 	return Variant(result);
 }
 
+// ========================================================
 
-uint8_t EthABIWrapper::hexCharToUint8(char c) {
-	if (std::isdigit(c)) {
-		return c - '0';
+PackedByteArray EthABIWrapper::eth_abi_encode_address(Variant value) {
+	struct eth_abi data;
+	size_t hexlen;
+	char* hex;
+	String value_str = value.operator String();
+	if (!value_str.begins_with("0x")) {
+		value_str = "0x" + value_str;
 	}
-	else if (std::isalpha(c)) {
-		return std::tolower(c) - 'a' + 10;
-	}
-	return 0;
+	const char* value_const = value_str.utf8().get_data();
+	char* _value = new char[strlen(value_const) + 1];
+	strcpy(_value, value_const);
+
+	eth_abi_init(&data, ETH_ABI_ENCODE);
+	eth_abi_address(&data, &_value);
+	eth_abi_to_hex(&data, &hex, &hexlen);
+	eth_abi_free(&data);
+	PackedByteArray result;
+	hexStringToPackedByteArray(hex, result);
+	return result;
 }
 
-void EthABIWrapper::hexStringToPackedByteArray(const char* hex, PackedByteArray& result) {
-	size_t length = strlen(hex);
-	size_t byteArraySize = length / 2;  // 每两个字符转换为一个字节
+Variant EthABIWrapper::eth_abi_decode_address(const String& value) {
+	struct eth_abi data;
+	//size_t hexlen;
+	char* res;
+	const char* value_const = value.utf8().get_data();
+	char* hex = new char[strlen(value_const) + 1];
+	strcpy(hex, value_const);
 
-	uint8_t* byteArray = new uint8_t[byteArraySize];
-	for (size_t i = 0; i < byteArraySize; ++i) {
-		byteArray[i] = (hexCharToUint8(hex[2 * i]) << 4) | hexCharToUint8(hex[2 * i + 1]);
-	}
-
-	result.resize(byteArraySize);
-	memcpy(result.ptrw(), byteArray, byteArraySize);
-
-	delete[] byteArray;
+	eth_abi_from_hex(&data, hex, -1);
+	eth_abi_address(&data, &res);
+	eth_abi_free(&data);
+	delete[] hex;
+	Variant result = Variant(String(res));
+	return result;
 }
 
-char* EthABIWrapper::packedByteArrayToHexString(const PackedByteArray& a) {
-	static const char hex_digits[] = "0123456789abcdef";
-	size_t len = a.size();
-	char* hex = new char[len * 2 + 1];
+// ========================================================
 
-	for (size_t i = 0; i < len; ++i) {
-		hex[i * 2] = hex_digits[(a[i] >> 4) & 0x0F];
-		hex[i * 2 + 1] = hex_digits[a[i] & 0x0F];
-	}
-	hex[len * 2] = '\0';
+PackedByteArray EthABIWrapper::eth_abi_encode_bytes(const PackedByteArray& value) {
+	/*
+	PACKED_BYTE_ARRAY
+	*/
+	struct eth_abi data;
+	char* hex;
+	size_t hexlen;
+	const uint8_t* value_const = value.ptr();
+	size_t size = value.size();
+	uint8_t* _value = new uint8_t[size];
+	memcpy(_value, value_const, size);
+	uint8_t** __value = &_value;
 
-	return hex;
+	std::cout << "ENC BYTES STR: " << value_const << "SIZE: " << size << std::endl;
+
+	eth_abi_init(&data, ETH_ABI_ENCODE);
+	eth_abi_bytes(&data, __value, &size);
+	eth_abi_to_hex(&data, &hex, &hexlen);
+	eth_abi_free(&data);
+	PackedByteArray result;
+	hexStringToPackedByteArray(hex, result);
+	delete[] _value;
+	delete[] hex;
+	return result;
+}
+
+PackedByteArray EthABIWrapper::eth_abi_decode_bytes(const String& value) {
+	struct eth_abi data;
+	uint8_t *res;
+	const char* value_const = value.utf8().get_data();
+	size_t size = value.utf8().size();
+	char* hex = new char[strlen(value_const) + 1];
+	strcpy(hex, value_const);
+
+	std::cout << "DEC BYTES STR: " << value.utf8().get_data() << "SIZE: " << size << std::endl;
+	std::cout << "DEC BYTES DECODE HEX: " << hex << *hex << std::endl;
+
+	eth_abi_from_hex(&data, hex, -1);
+	eth_abi_bytes(&data, &res, &size);
+	eth_abi_free(&data);
+	std::cout << "DEC BYTES DECODE RES: " << res << *res << std::endl;
+
+	PackedByteArray result = uint8PtrToPackedByteArray(res, size);
+
+	//std::cout << "BYTES DECODE BYTE: " << result << std::endl;
+
+	delete[] hex;
+	return result;
 }

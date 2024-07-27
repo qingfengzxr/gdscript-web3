@@ -4,6 +4,7 @@
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "eth_abi/abi.h"
+#include "eth_abi/abi_util.h"
 #include <iostream>
 
 
@@ -26,14 +27,16 @@ private:
 
 	PackedByteArray eth_abi_encode_int(Variant value);
 	Variant eth_abi_decode_int(const String& value);
+
 	PackedByteArray eth_abi_encode_bool(Variant value);
 	Variant eth_abi_decode_bool(const String& value);
 
-	uint8_t hexCharToUint8(char c);
+	PackedByteArray eth_abi_encode_bytes(const PackedByteArray& value);
+	PackedByteArray eth_abi_decode_bytes(const String& value);
 
-	void hexStringToPackedByteArray(const char* hex, PackedByteArray& result);
+	PackedByteArray eth_abi_encode_address(Variant value);
+	Variant eth_abi_decode_address(const String& value);
 
-	char* packedByteArrayToHexString(const PackedByteArray& a);
 
 };
 
