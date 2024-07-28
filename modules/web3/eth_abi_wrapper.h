@@ -37,6 +37,12 @@ private:
 	PackedByteArray eth_abi_encode_address(Variant value);
 	Variant eth_abi_decode_address(const String& value);
 
+	PackedByteArray eth_abi_encode_array(Variant value, const String& type);
+	Variant eth_abi_decode_array(const String& value, const String& type);
+
+	//template<typename... Args>
+	//PackedByteArray eth_abi_encode_call(const String& funcName, Args... args);
+	//Variant eth_abi_decode_call(const String& value);
 
 };
 
