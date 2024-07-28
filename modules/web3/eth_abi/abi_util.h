@@ -15,4 +15,6 @@ char* packedByteArrayToHexString(const PackedByteArray& a);
 
 PackedByteArray uint8PtrToPackedByteArray(const uint8_t* data, size_t size);
 
+int getArrayArgSize(const char* argName);
+
 #endif

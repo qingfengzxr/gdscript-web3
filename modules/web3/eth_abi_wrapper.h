@@ -19,9 +19,10 @@ protected:
 	static void _bind_methods();
 
 	PackedByteArray encode(const String& type, Variant value);
-
 	Variant decode(const String& type, const String& value);
 
+	PackedByteArray encode_call(const String& funcName, const Array& args);
+	Variant decode_call(const String& value, const Array& args);
 
 private:
 
@@ -39,10 +40,6 @@ private:
 
 	PackedByteArray eth_abi_encode_array(Variant value, const String& type);
 	Variant eth_abi_decode_array(const String& value, const String& type);
-
-	//template<typename... Args>
-	//PackedByteArray eth_abi_encode_call(const String& funcName, Args... args);
-	//Variant eth_abi_decode_call(const String& value);
 
 };
 

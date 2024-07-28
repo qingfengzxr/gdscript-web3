@@ -46,3 +46,16 @@ char* packedByteArrayToHexString(const PackedByteArray& a) {
 
 	return hex;
 }
+
+int getArrayArgSize(const char* argName) {
+	std::string input(argName);
+	std::size_t start_pos = input.find('[');
+	std::size_t end_pos = input.find(']');
+
+	if (start_pos != std::string::npos && end_pos != std::string::npos && end_pos > start_pos) {
+		return std::stoi(input.substr(start_pos + 1, end_pos - start_pos - 1));
+	}
+	else {
+		return -1;
+	}
+}
