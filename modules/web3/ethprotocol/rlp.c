@@ -1,6 +1,6 @@
 #include <string.h>
 #include "rlp.h"
-/*#include <ethc/keccak256.h>*/ 
+/*#include <ethc/keccak256.h>*/
 #include "hex.h"
 #include "address.h"
 
@@ -221,7 +221,7 @@ int eth_rlp_bytes(struct eth_rlp *rlp, uint8_t **bytes, size_t *len) {
     return -1;
 
   cframe = rlp->cframe;
-  
+
   if (rlp->m == ETH_RLP_ENCODE) {
     if (*len == 1 && **bytes <= 0x7F) {
       /* single 0 value is empty bytes (0x) */
@@ -283,14 +283,14 @@ int eth_rlp_hex(struct eth_rlp *rlp, char **hex, int *len) {
     hlen = len == NULL ? (int)strlen(*hex) : *len;
 
     if (eth_is_hex(*hex, hlen) <= 0)
-      return -1;
+      return -2;
 
     if ((hsize = eth_hex_to_bytes(&buf, *hex, hlen)) <= 0)
-      return -1;
+      return -3;
 
     if (eth_rlp_bytes(rlp, &buf, &hsize) <= 0) {
       free(buf);
-      return -1;
+      return -4;
     }
 
     free(buf);

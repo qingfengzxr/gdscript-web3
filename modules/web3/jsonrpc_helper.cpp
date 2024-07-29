@@ -3,27 +3,58 @@
 #include <iostream>
 
 JsonrpcHelper::JsonrpcHelper() {
-	;
+	// use https as default
+	m_port = 443;
+	// just use for test.
+	// m_hostname = "https://optimism.llamarpc.com";
+    m_hostname = "https://rpc-sepolia.rockx.com";
 }
 
 JsonrpcHelper::~JsonrpcHelper() {
 	;
 }
 
-String JsonrpcHelper::eth_block_number() {
+String JsonrpcHelper::get_hostname() const {
+    return m_hostname;
+}
+
+void JsonrpcHelper::set_hostname(const String &hostname) {
+    m_hostname = hostname;
+}
+
+int JsonrpcHelper::get_port() const {
+    return m_port;
+}
+
+void JsonrpcHelper::set_port(int port) {
+    m_port = port;
+}
+
+Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant> &params, const Variant &id) {
     HTTPClient *client = HTTPClient::create();
 
-	Vector<String> p_params	= Vector<String>();
-	Dictionary request = make_request("eth_blockNumber", p_params, 1);
+	Dictionary call_result;
+	call_result["success"] = true;
+
+	JSONRPC* jsonrpc = new JSONRPC();
+	Dictionary request = jsonrpc->make_request(method, params, id);
 	String msg = Variant(request).to_json_string();
 
-	printf("request msg: %s\n", msg.utf8().get_data());
+	printf("Debug! request msg: %s\n", msg.utf8().get_data());
 
-	String host_name = "https://optimism.llamarpc.com";
-    Error err = client->connect_to_host(host_name, 443, nullptr); // if use http, port is 80
+	if (m_hostname == "" || m_port == 0) {
+		ERR_PRINT("hostname or port not set.");
+		call_result["success"] = false;
+		call_result["errmsg"] = String("hostname or port not set. host: {0}, port: {1}").format(varray(m_hostname, m_port));
+		return call_result;
+	}
+
+    Error err = client->connect_to_host(m_hostname, m_port, nullptr); // if use http, port is 80
     if (err != OK) {
 		ERR_PRINT("Error connect_to_host.");
-        return "";
+		call_result["success"] = false;
+		call_result["errmsg"] = String("fail for connect host: {0}, port: {1}").format(varray(m_hostname, m_port));
+        return call_result;
     }
 
     // wait connect, it's necessray to wait connect done.
@@ -33,15 +64,17 @@ String JsonrpcHelper::eth_block_number() {
     }
 
     if (client->get_status() != HTTPClient::STATUS_CONNECTED) {
-		String errmsg = "Error connect 2. status: " + String::num_int64(client->get_status());
+		String errmsg = "fail for connect. status: " + String::num_int64(client->get_status());
 		ERR_PRINT(errmsg);
-        return "";
+		call_result["success"] = false;
+		call_result["errmsg"] = errmsg;
+        return call_result;
     }
 
     Vector<String> headers;
     headers.push_back("Content-Type: application/json");
     headers.push_back("Content-Length: " + itos(msg.utf8().length()));
-	headers.push_back("Accept-Encoding: gzip, deflate"); // TODO: maybe needn't
+	// headers.push_back("Accept-Encoding: gzip, deflate"); // TODO: maybe needn't
 
 	// request need to be uint8_t array
 	CharString charstr = msg.utf8();
@@ -54,7 +87,9 @@ String JsonrpcHelper::eth_block_number() {
     err = client->request(HTTPClient::Method::METHOD_POST, "/", headers, uint8_array.ptr(), uint8_array.size());
     if (err != OK) {
 		ERR_PRINT("Error sending request.");
-        return "";
+		call_result["success"] = false;
+		call_result["errmsg"] = String("fail for sending request. err: {0}").format(varray(err));
+        return call_result;
     }
 
     // waiting response
@@ -66,7 +101,9 @@ String JsonrpcHelper::eth_block_number() {
         client->get_status() != HTTPClient::STATUS_CONNECTED) {
 		String errmsg = "Error response. status: " + String::num_int64(client->get_status());
 		ERR_PRINT(errmsg);
-        return "";
+		call_result["success"] = false;
+		call_result["errmsg"] = errmsg;
+        return call_result;
     }
 
 	// read response body data
@@ -88,12 +125,21 @@ String JsonrpcHelper::eth_block_number() {
 		response_body_str = String::utf8((const char*)response_body.ptr(), response_body.size());
 	}
 
+	// TODO: Maybe returning the specified type is a better implementation
+	call_result["response_body"] = response_body;
 	// example output: Response body: {"jsonrpc":"2.0","id":1,"result":"0x74751e4"}
     printf("Debug! Response body: %s\n", response_body_str.utf8().get_data());
-	return response_body_str;
+	return call_result;
 }
 
-
 void JsonrpcHelper::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("eth_block_number"), &JsonrpcHelper::eth_block_number);
+    ClassDB::bind_method(D_METHOD("get_hostname"), &JsonrpcHelper::get_hostname);
+    ClassDB::bind_method(D_METHOD("set_hostname", "hostname"), &JsonrpcHelper::set_hostname);
+    ClassDB::bind_method(D_METHOD("get_port"), &JsonrpcHelper::get_port);
+    ClassDB::bind_method(D_METHOD("set_port", "port"), &JsonrpcHelper::set_port);
+
+    ClassDB::bind_method(D_METHOD("call_method", "method", "params", "id"), &JsonrpcHelper::call_method);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "hostname"), "set_hostname", "get_hostname");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "port"), "set_port", "get_port");
 }
