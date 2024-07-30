@@ -27,13 +27,14 @@ module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
 module_env.add_source_files(env.modules_sources, "ethprotocol/*.c")
 module_env.add_source_files(env.modules_sources, "ethprotocol/*.cpp")
+module_env.add_source_files(env.modules_sources, "eth_abi/*.cpp")
 module_env.add_source_files(env.modules_sources, "bigint/*.cpp")
 
 # Append CCFLAGS flags for both C and C++ code.
 # If you need to, you can:
 # - Append CFLAGS for C code only.
 # - Append CXXFLAGS for C++ code only.
-module_env.Append(CCFLAGS=['-O2', '-Wno-unused-function'])
+# module_env.Append(CCFLAGS=['-O2', '-Wno-unused-function'])
 # Add the paths and libraries to the environment
 module_env.Append(CPPPATH=include_paths + ["./",
                                            "./libsecp256k1/include",
@@ -41,6 +42,7 @@ module_env.Append(CPPPATH=include_paths + ["./",
                                            "./libsecp256k1/src/modules/ecdh",
                                            "./libsecp256k1/src",
                                            "./libkeccak",
+                                           "./eth_abi",
                                            "./ethprotocol",
                                            "./bigint"
                                            ])

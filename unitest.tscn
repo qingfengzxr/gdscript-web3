@@ -4,7 +4,9 @@
 [ext_resource type="Script" path="res://secp256k1_wrapper_unit_test.gd" id="2_qiyr0"]
 [ext_resource type="Script" path="res://big_int_unit_test.gd" id="3_k8ri3"]
 [ext_resource type="Script" path="res://legacy_tx_unit_test.gd" id="4_4c6t5"]
-[ext_resource type="Script" path="res://jsonrpc_unit_test.gd" id="5_2owue"]
+[ext_resource type="Script" path="res://jsonrpc_example.gd" id="5_pxvwt"]
+[ext_resource type="Script" path="res://eth_abi_wrapper_unit_test.gd" id="5_wxdp5"]
+
 
 [node name="Node2D" type="Node2D"]
 
@@ -31,4 +33,9 @@ script = ExtResource("4_4c6t5")
 [node name="JsonrpcUnitTest" type="Label" parent="."]
 offset_right = 40.0
 offset_bottom = 23.0
-script = ExtResource("5_2owue")
+script = ExtResource("5_pxvwt")
+
+[node name="ABIUnitTest2" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("5_wxdp5")
