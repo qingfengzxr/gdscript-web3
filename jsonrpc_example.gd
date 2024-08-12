@@ -1,8 +1,9 @@
-extends Node2D
+extends Label
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	return 
 	# 1. First example: use c++ module
 	var op = Optimism.new()
 	var output = op.block_number("001")
