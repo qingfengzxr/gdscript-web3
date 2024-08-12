@@ -53,9 +53,19 @@ cp -rf ~/gdscript-web3/modules/web3 ~/godot/modules
 > Don't forget to replace your own path
 
 #### 4. Install gmp library
-TODO
+ubuntu:
+```
+sudo apt install libgmp-dev
+```
+
+Also, it is can be install by source code. Reference: https://gmplib.org/
 
 #### 5. Compile Godot Engine
+Linux:
+```
+scons platform=linuxbsd
+```
+
 MacOS:
 ```
 scons platform=osx arch=arm64
