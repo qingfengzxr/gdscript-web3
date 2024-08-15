@@ -14,7 +14,7 @@ int eth_ecdsa_pubkey_get(uint8_t *dest, const uint8_t *privkey) {
   if (dest == NULL || privkey == NULL)
     return -1;
 
-  secp_ctx = secp256k1_context_create(SECP256K1_CONTEXT_NONE);
+  secp_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
   if (secp_ctx == NULL)
     return -1;
 
