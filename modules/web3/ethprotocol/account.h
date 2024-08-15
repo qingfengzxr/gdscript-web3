@@ -11,6 +11,9 @@ extern "C" {
 #include "ethc-common.h"
 #include "eth_ecdsa.h"
 
+#define ETH_ACCOUNT_OK      1
+#define ETH_ACCOUNT_FAILED -1
+
 struct eth_account {
   uint8_t address[20];
   uint8_t privkey[32];
