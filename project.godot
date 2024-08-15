@@ -12,5 +12,5 @@ config_version=5
 
 config/name="gd-web3"
 run/main_scene="res://unitest.tscn"
-config/features=PackedStringArray("4.3", "Forward Plus")
+config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
