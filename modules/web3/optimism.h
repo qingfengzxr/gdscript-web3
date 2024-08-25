@@ -23,6 +23,7 @@ class Optimism : public RefCounted {
 	Ref<Secp256k1Wrapper> m_secp256k1;
 	Ref<KeccakWrapper> m_keccak;
 	Ref<JsonrpcHelper> m_jsonrpc_helper;
+	String m_rpc_url;
 
 protected:
 	static void _bind_methods();
@@ -32,9 +33,11 @@ public:
 	~Optimism();
 
 	bool init_secp256k1_instance();
-
 	Ref<Secp256k1Wrapper> get_secp256k1_wrapper();
 	Ref<KeccakWrapper> get_keccak_wrapper();
+
+	String get_rpc_url() const;
+	void set_rpc_url(const String &url);
 
 	// sync jsonrpc request method, base on JsonrpcHelper class
 

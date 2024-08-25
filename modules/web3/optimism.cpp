@@ -22,6 +22,17 @@ Ref<KeccakWrapper> Optimism::get_keccak_wrapper() {
 	return m_keccak;
 }
 
+String Optimism::get_rpc_url() const {
+    return m_rpc_url;
+}
+
+void Optimism::set_rpc_url(const String &url) {
+    m_rpc_url = url;
+	if ( m_rpc_url != "" && m_jsonrpc_helper != NULL ) {
+		m_jsonrpc_helper->set_hostname(m_rpc_url);
+	}
+}
+
 // chain_id() retrieves the current chain ID for transaction replay protection.
 Dictionary Optimism::chain_id(const Variant &id) {
 	Vector<Variant> p_params	= Vector<Variant>();
@@ -136,6 +147,8 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_secp256k1_instance"), &Optimism::init_secp256k1_instance);
 	ClassDB::bind_method(D_METHOD("get_secp256k1_wrapper"), &Optimism::get_secp256k1_wrapper);
 	ClassDB::bind_method(D_METHOD("get_keccak_wrapper"), &Optimism::get_keccak_wrapper);
+    ClassDB::bind_method(D_METHOD("get_rpc_url"), &Optimism::get_rpc_url);
+    ClassDB::bind_method(D_METHOD("set_rpc_url", "url"), &Optimism::set_rpc_url);
 
 	// sync jsonrpc method
 	ClassDB::bind_method(D_METHOD("chain_id", "id"), &Optimism::chain_id);
