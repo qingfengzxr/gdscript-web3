@@ -11,6 +11,7 @@
 #include "jsonrpc_helper.h"
 #include "eth_abi_wrapper.h"
 #include "abi_helper.h"
+#include "eth_account_wrapper.h"
 
 void initialize_web3_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -25,6 +26,8 @@ void initialize_web3_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<JsonrpcHelper>();
 	ClassDB::register_class<EthABIWrapper>();
 	ClassDB::register_class<ABIHelper>();
+	ClassDB::register_class<EthAccountManager>();
+	ClassDB::register_class<EthAccount>();
 }
 
 void uninitialize_web3_module(ModuleInitializationLevel p_level) {
