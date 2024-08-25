@@ -3,8 +3,8 @@
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "eth_abi/abi.h"
-#include "eth_abi/abi_util.h"
+#include "abi.h"
+#include "abi_util.h"
 #include <iostream>
 
 

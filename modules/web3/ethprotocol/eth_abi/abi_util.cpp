@@ -59,3 +59,25 @@ int getArrayArgSize(const char* argName) {
 		return -1;
 	}
 }
+
+
+String join(const Vector<String>& elements, const String& delimiter) {
+    String result;
+    for (size_t i = 0; i < elements.size(); ++i) {
+        result += elements[i];
+        if (i < elements.size() - 1) {
+            result += delimiter;
+        }
+    }
+    return result;
+}
+
+String ResolveNameConflict(const String& rawName, const std::function<bool(const String&)>& used) {
+    String name = rawName;
+    bool ok = used(name);
+    for (int idx = 0; ok; idx++) {
+        name = rawName + String::num(idx);
+        ok = used(name);
+    }
+    return name;
+}

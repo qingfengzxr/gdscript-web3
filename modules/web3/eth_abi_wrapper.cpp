@@ -1,5 +1,4 @@
 #include "eth_abi_wrapper.h"
-#include "eth_abi/abi.h"
 
 
 EthABIWrapper::EthABIWrapper() {
@@ -37,7 +36,7 @@ PackedByteArray EthABIWrapper::encode(const String& type, Variant value) {
 }
 
 Variant EthABIWrapper::decode(const String& type, const String& value) {
-	
+
 	if (type == "int") {
 		return eth_abi_decode_int(value);
 	}
