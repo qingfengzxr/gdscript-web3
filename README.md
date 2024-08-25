@@ -2,6 +2,13 @@
 
 GDWeb3 is a GDScript library for interacting with blockchain networks.
 
+Supported Networks：
+
+1. [Optimism](https://www.optimism.io/) (in progress)
+2. ...
+
+![Architecture](./imgs/image.png)
+
 ## Description
 
 GDWeb3 aims to help Godot game developers easily interact with blockchain networks, empowering them to develop Gamefi and FOCG (full on-chain games).
