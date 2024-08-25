@@ -25,7 +25,7 @@ Godot is completely free and open source under the permissive MIT license. Users
 
 ## Support Godot Version
 
-At this stage, we are developing based on `4.1-stable` version. Currently, we only guarantee upward compatibility. Therefore, when you use the program compiled from this project to extend development on older game projects, please pay attention to the version number of the Godot engine program you originally used.
+At this stage, we are developing based on `4.2.2-stable` version. Currently, we only guarantee upward compatibility. Therefore, when you use the program compiled from this project to extend development on older game projects, please pay attention to the version number of the Godot engine program you originally used.
 
 ## Getting Started
 
