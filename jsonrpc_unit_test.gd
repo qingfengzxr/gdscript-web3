@@ -45,6 +45,8 @@ func send_transaction():
 	var send_tx_data = enc_string
 	var blockNumber = op.block_number("000")
 	print("rpc_blocknumber: ", blockNumber["response_body"].get_string_from_utf8())
+
+	return 
 	var rpc_result = op.send_transaction(send_tx_data, "001")
 	print("rpc_result: ", rpc_result["response_body"].get_string_from_utf8())
 	return
