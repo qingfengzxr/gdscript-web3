@@ -148,12 +148,12 @@ inline ABIMethod* NewABIMethod(const String& name, const String& rawName, Functi
     Vector<String> outputNames;
 
     for (const auto& input : inputs) {
-        inputNames.push_back(input.string_kind + " " + input.name);
-        types.push_back(input.string_kind);
+        inputNames.push_back(input.type + " " + input.name);
+        types.push_back(input.type);
     }
 
     for (const auto& output : outputs) {
-        String outputName = output.string_kind;
+        String outputName = output.type;
         if (output.name != "") {
             outputName += " " + output.name;
         }

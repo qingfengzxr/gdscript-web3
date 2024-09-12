@@ -6,30 +6,17 @@
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 #include <vector>
-#include "abiargument.h"
+#include "abitype.h"
 
-// 假设Type是一个枚举或者类，需要根据实际情况定义
-enum TypeKind {
-    // 示例类型
-    IntType,
-    StringType,
-    BoolType
-    // 其他类型...
-};
-
-struct Type {
-    String string_kind;
-    TypeKind kind;
-    int size;
-    bool isDynamic;
-};
 
 // Argument holds the name of the argument and the corresponding type.
 // Types are used when packing and testing arguments.
 struct Argument {
     String name;
-    Type type;
+    ABIType type;
     bool indexed; // indexed is only used by events
+
+    void printf() const;
 };
 
 struct ABIArgumentMarshaling {
@@ -41,11 +28,8 @@ struct ABIArgumentMarshaling {
 
     // Logic variable use to pack or unpack, it was not from abi.json.
     // But usefull for unpack abi or pack abi.
-    // TODO
-    String string_kind;
-    TypeKind kind;
-    int size;
-    bool isDynamic;
+    // TODO: 做个转换，每个ABIArgumentMarshaling都有一个Argument, Argument才是实际的存储用于abi编解码参数的数据结构
+    Argument argument;
 
 	void unmarshal(const Dictionary &dict) {
         name = dict.get("name", "");
@@ -67,12 +51,9 @@ struct ABIArgumentMarshaling {
 
 using ABIArguments = Vector<ABIArgumentMarshaling>;
 
-PackedByteArray abiarguments_pack(const ABIArguments& args) {
-    // TODO: implement this function
 
-    return PackedByteArray();
-}
+Argument convert_to_argument(const ABIArgumentMarshaling &abi_arg);
 
-
+PackedByteArray abiarguments_pack(const ABIArguments& args);
 
 #endif // ABIARGUMENT_H

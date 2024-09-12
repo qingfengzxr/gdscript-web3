@@ -296,12 +296,22 @@ bool ABIHelper::debug_show_abimethods() {
 Variant ABIHelper::json_test(const String &json_str) {
     Vector<Field> fields = unmarshal_json_to_fieldlist(json_str);
 
-	//输出res的长度和内容
-	printf("res size: %ld\n", fields.size());
-	for (int i = 0; i < fields.size(); ++i) {
-		Field field = fields[i];
-		printf("field[%d]: type: %s, name: %s\n", i, field.type.utf8().get_data(), field.name.utf8().get_data());
-	}
+	printf("res size: %d\n", fields.size());
+	for (const auto &v: fields) {
+        printf("type: %s, name: %s\n", v.type.utf8().get_data(), v.name.utf8().get_data());
+    }
+
+    // 试试convert_to_argument
+    for (const auto& field : fields) {
+        for (const auto& input : field.inputs) {
+            ABIArgumentMarshaling args = input;
+            print_line("[debug] step 1");
+            args.argument = convert_to_argument(args);
+            print_line("[debug] step 2");
+            args.argument.printf();
+            print_line("[debug] step 3");
+        }
+    }
 
 	return marshal_fieldlist_to_json(fields);
 }

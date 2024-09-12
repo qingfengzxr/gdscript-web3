@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://biyptoci8rfi7"]
+[gd_scene load_steps=8 format=3 uid="uid://biyptoci8rfi7"]
 
 [ext_resource type="Script" path="res://keccak_wrapper_unit_test.gd" id="1_kyujt"]
 [ext_resource type="Script" path="res://secp256k1_wrapper_unit_test.gd" id="2_qiyr0"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://legacy_tx_unit_test.gd" id="4_4c6t5"]
 [ext_resource type="Script" path="res://jsonrpc_unit_test.gd" id="5_pxvwt"]
 [ext_resource type="Script" path="res://eth_abi_wrapper_unit_test.gd" id="5_wxdp5"]
+[ext_resource type="Script" path="res://abihelper_unit_test.gd" id="7_msykw"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -38,3 +39,8 @@ script = ExtResource("5_pxvwt")
 offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("5_wxdp5")
+
+[node name="ABIHelperUnitTest" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("7_msykw")
