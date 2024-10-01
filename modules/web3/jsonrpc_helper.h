@@ -39,7 +39,7 @@ public:
 	void set_port(int port);
 
 	// base request method
-	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id);
+	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id, int timeout_ms = 5000);
 
 	String format_output(const String &p_text);
 };

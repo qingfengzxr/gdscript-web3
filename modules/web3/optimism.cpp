@@ -162,7 +162,35 @@ Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &blo
 	return m_jsonrpc_helper->call_method("eth_call", p_params, id);
 }
 
+// suggest_gas_price retrieves the currently suggested gas price to allow a timely
+// execution of a transaction.
+Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
+	Ref<BigInt> gas_price = Ref<BigInt>(memnew(BigInt));
 
+	Vector<Variant> p_params	= Vector<Variant>();
+	Dictionary result =  m_jsonrpc_helper->call_method("eth_gasPrice", p_params, id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_gasPrice. errmsg: %s", result["errmsg"])
+		);
+		return gas_price;
+	}
+
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	Dictionary res = json->parse_string(result["response_body"]);
+	gas_price->from_hex(res["result"]);
+	return gas_price;
+}
+
+// EstimateGas tries to estimate the gas needed to execute a specific transaction based on
+// the current pending state of the backend blockchain. There is no guarantee that this is
+// the true gas limit requirement as other transactions may be added or removed by miners,
+// but it should provide a basis for setting a reasonable default.
+Dictionary Optimism::estimate_gas(const Dictionary &call_msg, const Variant &id) {
+	Vector<Variant> p_params	= Vector<Variant>();
+	p_params.push_back(call_msg);
+	return m_jsonrpc_helper->call_method("eth_estimateGas", p_params, id);
+}
 
 
 void Optimism::_bind_methods() {
@@ -181,6 +209,8 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("block_number", "id"), &Optimism::block_number);
 	ClassDB::bind_method(D_METHOD("send_transaction", "signed_tx", "id"), &Optimism::send_transaction);
 	ClassDB::bind_method(D_METHOD("call_contract", "call_msg", "block_number", "id"), &Optimism::call_contract);
+	ClassDB::bind_method(D_METHOD("suggest_gas_price", "id"), &Optimism::suggest_gas_price);
+	ClassDB::bind_method(D_METHOD("estimate_gas", "call_msg", "id"), &Optimism::estimate_gas);
 
 	// async jsonrpc method
 	ClassDB::bind_method(D_METHOD("async_block_number", "id"), &Optimism::async_block_number);
