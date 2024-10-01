@@ -121,7 +121,7 @@ Dictionary Optimism::async_block_number(const Variant &id) {
 	return request;
 }
 
-// SendTransaction injects a signed transaction into the pending pool for execution.
+// send_transaction injects a signed transaction into the pending pool for execution.
 //
 // If the transaction was a contract creation use the TransactionReceipt method to get the
 // contract address after the transaction has been mined.
@@ -142,6 +142,28 @@ Dictionary Optimism::async_send_transaction(const String &signed_tx, const Varia
 	return request;
 }
 
+// call_contract executes a message call transaction, which is directly executed in the VM
+// of the node, but never mined into the blockchain.
+//
+// blockNumber selects the block height at which the call runs. It can be nil, in which
+// case the code is taken from the latest known block. Note that state from very old
+// blocks might not be available.
+Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id) {
+	Vector<Variant> p_params	= Vector<Variant>();
+
+	// first param: call msg
+	p_params.push_back(call_msg);
+	// second param: block number
+	if ( block_number == "" ) {
+		p_params.push_back("latest");
+	} else {
+		p_params.push_back(block_number);
+	}
+	return m_jsonrpc_helper->call_method("eth_call", p_params, id);
+}
+
+
+
 
 void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_secp256k1_instance"), &Optimism::init_secp256k1_instance);
@@ -158,6 +180,7 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("header_by_number", "number", "id"), &Optimism::header_by_number);
 	ClassDB::bind_method(D_METHOD("block_number", "id"), &Optimism::block_number);
 	ClassDB::bind_method(D_METHOD("send_transaction", "signed_tx", "id"), &Optimism::send_transaction);
+	ClassDB::bind_method(D_METHOD("call_contract", "call_msg", "block_number", "id"), &Optimism::call_contract);
 
 	// async jsonrpc method
 	ClassDB::bind_method(D_METHOD("async_block_number", "id"), &Optimism::async_block_number);

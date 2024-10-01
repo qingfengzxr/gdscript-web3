@@ -24,9 +24,9 @@ ABIHelper::~ABIHelper() {
 PackedByteArray ABIHelper::pack(String name, const Array &args) {
     if ( name == "" ) {
         // constructor
-        PackedByteArray arguments = abiarguments_pack(m_constructor->inputs);
+        PackedByteArray arguments = abiarguments_pack(m_constructor->inputs, args);
         if (arguments.size() == 0) {
-            // TODO: add error
+            ERR_PRINT("abiarguments pack failed");
             return arguments;
         }
         return arguments;
@@ -35,12 +35,70 @@ PackedByteArray ABIHelper::pack(String name, const Array &args) {
     ABIMethod* method = get_abimethod(name);
     ERR_FAIL_COND_V_MSG(method == nullptr , PackedByteArray(), "method " + name + " not found");
 
-    PackedByteArray arguments = abiarguments_pack(method->inputs);
-    ERR_FAIL_COND_V_MSG(arguments.size() == 0 , PackedByteArray(), "arguments pack failed");
+    PackedByteArray arguments = abiarguments_pack(method->inputs, args);
+    // ERR_FAIL_COND_V_MSG(arguments.size() == 0 , PackedByteArray(), "arguments pack failed");
 
     PackedByteArray res = method->id;
     res.append_array(arguments);
     return res;
+}
+
+ABIArguments ABIHelper::get_arguments(const String &name, const PackedByteArray &data) {
+    ABIArguments args;
+    if (m_methods_index.has(name)) {
+        int index = m_methods_index[name];
+        ABIMethod* method = m_methods[index];
+        if (data.size() % 32 != 0) {
+            ERR_PRINT(vformat("abi: improperly formatted data size: %d", data.size()));
+            return args;
+        }
+        args = method->outputs;
+        return args;
+    }
+    if (m_events_index.has(name)) {
+        int index = m_events_index[name];
+        ABIEvent* event = m_events[index];
+        args = event->inputs;
+        return args;
+    }
+
+    if (args.size() == 0) {
+        ERR_PRINT("abi: could not locate named method or event: " + name);
+        return args;
+    }
+
+    return args;
+}
+
+Error ABIHelper::unpack_into_dictionary(String name, PackedByteArray data, Dictionary result) {
+    ABIArguments args = get_arguments(name, data);
+    if (args.size() == 0) {
+        ERR_PRINT("abi: could not locate named method or event: " + name);
+        return FAILED;
+    }
+    Variant res = result;
+    Error err = unpack_abiarguments(args, data, res);
+    if (err != OK) {
+        return err;
+    }
+    result = res;
+    return OK;
+}
+
+Error ABIHelper::unpack_into_array(String name, PackedByteArray data, Array result) {
+    ABIArguments args = get_arguments(name, data);
+    if (args.size() == 0) {
+        ERR_PRINT("abi: could not locate named method or event: " + name);
+        return FAILED;
+    }
+
+    Variant res = result;
+    Error err = unpack_abiarguments(args, data, res);
+    if (err != OK) {
+        return err;
+    }
+    result = res;
+    return OK;
 }
 
 Vector<Field> unmarshal_json_to_fieldlist(const String &json_str) {
@@ -180,7 +238,7 @@ bool ABIHelper::unmarshal_from_json(const String &json_str) {
     Vector<Field> fields = unmarshal_json_to_fieldlist(json_str);
 
     for (const auto &v: fields) {
-        printf("type: %s, name: %s\n", v.type.utf8().get_data(), v.name.utf8().get_data());
+        // printf("type: %s, name: %s\n", v.type.utf8().get_data(), v.name.utf8().get_data());
 
         String fieldType = v.type;
         if (fieldType == "constructor") {
@@ -271,60 +329,27 @@ int ABIHelper::abierror_count() {
     return m_errors.size();
 }
 
-bool ABIHelper::debug_show_abimethods() {
-    Array keys = m_methods_index.keys();
-    for (int i = 0; i < keys.size(); ++i) {
-        printf("[debug_show_methods] i: %d\n", i);
-
-        Variant key = keys[i];
-        int index = m_methods_index[key];
-        ABIMethod* method = m_methods[index];
-
-        std::cout << "Pointer method value (address): " << method << std::endl;
-
-        if (method != nullptr) {
-            printf("Key: %s, method name: %s\n", key.operator String().utf8().get_data(), method->name.utf8().get_data());
-        } else {
-            printf("Key: %s, Value: [Invalid ABIMethod pointer]\n", key.operator String().utf8().get_data());
-        }
-    }
-
-    printf("debug_show_methods run done.\n");
-    return true;
+// convert mpz_t to String
+String mpz_to_string(const mpz_t &value) {
+    char *str = mpz_get_str(nullptr, 10, value);
+    String result(str);
+    free(str);
+    return result;
 }
 
-Variant ABIHelper::json_test(const String &json_str) {
-    Vector<Field> fields = unmarshal_json_to_fieldlist(json_str);
-
-	printf("res size: %d\n", fields.size());
-	for (const auto &v: fields) {
-        printf("type: %s, name: %s\n", v.type.utf8().get_data(), v.name.utf8().get_data());
-    }
-
-    // 试试convert_to_argument
-    for (const auto& field : fields) {
-        for (const auto& input : field.inputs) {
-            ABIArgumentMarshaling args = input;
-            print_line("[debug] step 1");
-            args.argument = convert_to_argument(args);
-            print_line("[debug] step 2");
-            args.argument.printf();
-            print_line("[debug] step 3");
-        }
-    }
-
-	return marshal_fieldlist_to_json(fields);
+// create a new mpz_t from an integer
+mpz_t* create_mpz(int64_t value) {
+    mpz_t* result = (mpz_t*)malloc(sizeof(mpz_t));
+    mpz_init_set_si(*result, value);
+    return result;
 }
-
-
 
 void ABIHelper::_bind_methods() {
     ClassDB::bind_method(D_METHOD("unmarshal_from_json", "json_str"), &ABIHelper::unmarshal_from_json);
     ClassDB::bind_method(D_METHOD("abimethod_count"), &ABIHelper::abimethod_count);
     ClassDB::bind_method(D_METHOD("abierror_count"), &ABIHelper::abierror_count);
     ClassDB::bind_method(D_METHOD("abievent_count"), &ABIHelper::abievent_count);
-    ClassDB::bind_method(D_METHOD("debug_show_methods"), &ABIHelper::debug_show_abimethods);
-
-
-    ClassDB::bind_method(D_METHOD("json_test", "json_str"), &ABIHelper::json_test);
+	ClassDB::bind_method(D_METHOD("pack", "name", "args"), &ABIHelper::pack);
+	ClassDB::bind_method(D_METHOD("unpack_into_dictionary", "name", "data", "result"), &ABIHelper::unpack_into_dictionary);
+	ClassDB::bind_method(D_METHOD("unpack_into_array", "name", "data", "result"), &ABIHelper::unpack_into_array);
 }

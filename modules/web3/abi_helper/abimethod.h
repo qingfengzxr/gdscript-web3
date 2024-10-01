@@ -148,12 +148,12 @@ inline ABIMethod* NewABIMethod(const String& name, const String& rawName, Functi
     Vector<String> outputNames;
 
     for (const auto& input : inputs) {
-        inputNames.push_back(input.type + " " + input.name);
-        types.push_back(input.type);
+        inputNames.push_back(input.argument.type->string_kind + " " + input.name);
+        types.push_back(input.argument.type->string_kind);
     }
 
     for (const auto& output : outputs) {
-        String outputName = output.type;
+        String outputName = output.argument.type->string_kind;
         if (output.name != "") {
             outputName += " " + output.name;
         }
@@ -163,21 +163,18 @@ inline ABIMethod* NewABIMethod(const String& name, const String& rawName, Functi
     String sig;
     Vector<uint8_t> id;
     if (funType == Function) {
-        // equal: sig = fmt.Sprintf("%v(%v)", rawName, strings.Join(types, ","))
         sig = rawName + "(" + join(types, ",") + ")";
-    	uint8_t hash[32];
-        CharString utf8_bytes = sig.utf8();
+		uint8_t hash[32];
 
-        uint8_t* strs_bytes = new uint8_t[utf8_bytes.size()];
+		PackedByteArray data = sig.to_utf8_buffer();
+		const uint8_t* data_ptr = data.ptr();
 
-        for (int i = 0; i < utf8_bytes.size(); ++i) {
-            strs_bytes[i] = utf8_bytes[i];
-        }
-        int res = eth_keccak256(hash, strs_bytes, sig.size());
+        int res = eth_keccak256(hash, data_ptr, data.size());
         if ( res < 0 ) {
-            // error: TODO
-            std::cout << "error in NewMethod()" << std::endl;
+            ERR_PRINT("error in NewMethod() dealing with keccak256");
+            return nullptr;
         }
+
         // use the first 4 bytes as the id
         for (int i = 0; i < 4; ++i) {
             id.push_back(hash[i]);

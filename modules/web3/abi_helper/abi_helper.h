@@ -8,16 +8,21 @@
 #include "core/error/error_macros.h"
 #include "core/error/error_list.h"
 
+#include "core/io/marshalls.h"
 #include "core/io/http_client.h"
 #include "core/io/json.h"
 #include "core/io/json.h"
 #include "modules/jsonrpc/jsonrpc.h"
 #include "scene/main/http_request.h"
 
+#include <gmp.h>
+
 #include "abi_util.h"
 #include "abimethod.h"
 #include "abievent.h"
 #include "abierror.h"
+#include "abiargument.h"
+
 
 class ABIHelper : public RefCounted {
     GDCLASS(ABIHelper, RefCounted)
@@ -44,6 +49,8 @@ public:
 
     bool unmarshal_from_json(const String &json_str);
     PackedByteArray pack(String name, const Array &args);
+    Error unpack_into_dictionary(String name, PackedByteArray data, Dictionary result);
+    Error unpack_into_array(String name, PackedByteArray data, Array result);
 
     // method opera functions
     void add_abimethod(const String &name, ABIMethod* method);
@@ -60,12 +67,15 @@ public:
     ABIError* get_abierror(const String &name);
     int abierror_count();
 
+    bool has_fallback();
+    bool has_receive();
+
+    ABIArguments get_arguments(const String &name, const PackedByteArray &data);
+
+    // -----------------------------------
     // debug functions
     bool debug_show_abimethods();
     Variant json_test(const String &json_str);
-
-    bool has_fallback();
-    bool has_receive();
 };
 
 #endif // ABI_HELPER_H

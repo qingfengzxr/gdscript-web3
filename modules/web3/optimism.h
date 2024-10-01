@@ -50,6 +50,8 @@ public:
 	// TODO: BlockReceipts()
 	Dictionary header_by_hash(const String &hash, const Variant &id);
 	Dictionary header_by_number(const Ref<BigInt> &number, const Variant &id);
+	Dictionary call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id);
+
 
 
 	// async jsonrpc request method, base on JSONRPC class.

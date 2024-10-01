@@ -6,6 +6,7 @@
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 #include <vector>
+#include <iostream>
 #include "abitype.h"
 
 
@@ -13,11 +14,12 @@
 // Types are used when packing and testing arguments.
 struct Argument {
     String name;
-    ABIType type;
+    Ref<ABIType> type;
     bool indexed; // indexed is only used by events
 
-    void printf() const;
+    void format_output() const;
 };
+
 
 struct ABIArgumentMarshaling {
 	String name;
@@ -28,32 +30,23 @@ struct ABIArgumentMarshaling {
 
     // Logic variable use to pack or unpack, it was not from abi.json.
     // But usefull for unpack abi or pack abi.
-    // TODO: 做个转换，每个ABIArgumentMarshaling都有一个Argument, Argument才是实际的存储用于abi编解码参数的数据结构
+	// Each ABIArgumentMarshaling has an Argument.
+	// Argument is the actual data structure used for ABI encoding and decoding parameters.
     Argument argument;
 
-	void unmarshal(const Dictionary &dict) {
-        name = dict.get("name", "");
-        type = dict.get("type", "");
-        internalType = dict.get("internalType", "");
-        indexed = dict.get("indexed", false);
-
-        if (dict.has("components")) {
-            Array comps = dict["components"];
-            for (int i = 0; i < comps.size(); ++i) {
-                Dictionary compDict = comps[i];
-                ABIArgumentMarshaling component;
-                component.unmarshal(compDict);
-                components.push_back(component);
-            }
-        }
-    }
+	void unmarshal(const Dictionary &dict);
 };
 
 using ABIArguments = Vector<ABIArgumentMarshaling>;
 
 
-Argument convert_to_argument(const ABIArgumentMarshaling &abi_arg);
+Argument fill_argument(const ABIArgumentMarshaling &abi_arg);
 
-PackedByteArray abiarguments_pack(const ABIArguments& args);
+ABIArguments non_indexed(const ABIArguments& args);
+PackedByteArray abiarguments_pack(const ABIArguments& abiargs, const Array& args);
+// Error unpack_abiarguments_into_dictionary(const ABIArguments& abiargs, const PackedByteArray& data, Dictionary& result);
+// Error unpack_abiarguments_into_array(const ABIArguments& abiargs, const PackedByteArray& data, Array& result);
+Error unpack_abiarguments(const ABIArguments& abiargs, const PackedByteArray& data, Variant& result);
+Error unpack_abiarguments_values(const ABIArguments& abiargs, const PackedByteArray& data, Variant& result);
 
 #endif // ABIARGUMENT_H
