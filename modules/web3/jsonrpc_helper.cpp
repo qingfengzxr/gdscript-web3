@@ -46,6 +46,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         ERR_PRINT("hostname or port not set.");
         call_result["success"] = false;
         call_result["errmsg"] = String("hostname or port not set. host: {0}, port: {1}").format(varray(m_hostname, m_port));
+		delete jsonrpc;
         return call_result;
     }
 
@@ -54,6 +55,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         ERR_PRINT("Error connect_to_host.");
         call_result["success"] = false;
         call_result["errmsg"] = String("fail for connect host: {0}, port: {1}").format(varray(m_hostname, m_port));
+		delete jsonrpc;
         return call_result;
     }
 
@@ -71,6 +73,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
             ERR_PRINT("Connection timeout.");
             call_result["success"] = false;
             call_result["errmsg"] = "Connection timeout.";
+			delete jsonrpc;
             return call_result;
         }
     }
@@ -80,6 +83,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         ERR_PRINT(errmsg);
         call_result["success"] = false;
         call_result["errmsg"] = errmsg;
+		delete jsonrpc;
         return call_result;
     }
 
@@ -101,6 +105,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         ERR_PRINT("Error sending request.");
         call_result["success"] = false;
         call_result["errmsg"] = String("fail for sending request. err: {0}").format(varray(err));
+		delete jsonrpc;
         return call_result;
     }
 
@@ -114,6 +119,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
             ERR_PRINT("Request timeout.");
             call_result["success"] = false;
             call_result["errmsg"] = "Request timeout.";
+			delete jsonrpc;
             return call_result;
         }
     }
@@ -124,6 +130,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         ERR_PRINT(errmsg);
         call_result["success"] = false;
         call_result["errmsg"] = errmsg;
+		delete jsonrpc;
         return call_result;
     }
 
@@ -147,9 +154,10 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
     }
 
     // TODO: Maybe returning the specified type is a better implementation
-    call_result["response_body"] = String::utf8((const char*)response_body.ptr(), response_body.size());
-    // example output: Response body: {"jsonrpc":"2.0","id":1,"result":"0x74751e4"}
-    printf("Debug! Response body: %s\n", response_body_str.utf8().get_data());
+    // example response body: {"jsonrpc":"2.0","id":1,"result":"0x74751e4"}
+    call_result["response_body"] = response_body_str;
+
+	delete jsonrpc;
     return call_result;
 }
 

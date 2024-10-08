@@ -27,14 +27,6 @@ struct ABIError {
         : name(name_), inputs(inputs_), str(str_), sig(sig_), id(id_) {}
 };
 
-inline ABIError* NewABIError(const String &name, ABIArguments inputs) {
-    // TODO: Error will be implemented in the future.
-    // just some dummy code to make it compile
-    String str = "error " + name + "(";
-    String sig = name + "(";
-    PackedByteArray id;
-
-    return memnew(ABIError(name, inputs, str, sig, id));
-}
+ABIError* NewABIError(const String &name, ABIArguments inputs);
 
 #endif // ABIERROR_H

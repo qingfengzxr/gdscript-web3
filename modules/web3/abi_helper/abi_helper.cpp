@@ -7,36 +7,69 @@ ABIHelper::ABIHelper() {
 }
 
 ABIHelper::~ABIHelper() {
-    if (m_constructor != nullptr) { memdelete(m_constructor); }
-    if (m_fallback != nullptr) { memdelete(m_fallback); }
-    if (m_receive != nullptr) { memdelete(m_receive); }
-
-    // TODO: delete all methods & events & errors object
-    for (int64_t i = 0; i < m_methods.size(); i++) {
-        if (m_methods[i] != nullptr) {
-            memdelete(m_methods[i]);
+    for (int i = 0; i < m_methods.size(); ++i) {
+        if (m_methods[i]) {
+            memdelete(m_methods.write[i]);
+            m_methods.write[i] = nullptr;
         }
     }
-
     m_methods.clear();
+    m_methods_index.clear();
+
+    for (int i = 0; i < m_events.size(); ++i) {
+        if (m_events[i]) {
+            memdelete(m_events.write[i]);
+            m_events.write[i] = nullptr;
+        }
+    }
+    m_events.clear();
+    m_events_index.clear();
+
+    for (int i = 0; i < m_errors.size(); ++i) {
+        if (m_errors[i]) {
+            memdelete(m_errors.write[i]);
+            m_errors.write[i] = nullptr;
+        }
+    }
+    m_errors.clear();
+    m_errors_index.clear();
+
+    if (m_constructor) {
+        memdelete(m_constructor);
+        m_constructor = nullptr;
+    }
+    if (m_fallback) {
+        memdelete(m_fallback);
+        m_fallback = nullptr;
+    }
+    if (m_receive) {
+        memdelete(m_receive);
+        m_receive = nullptr;
+    }
 }
 
 PackedByteArray ABIHelper::pack(String name, const Array &args) {
+	PackedByteArray arguments;
     if ( name == "" ) {
         // constructor
-        PackedByteArray arguments = abiarguments_pack(m_constructor->inputs, args);
-        if (arguments.size() == 0) {
-            ERR_PRINT("abiarguments pack failed");
+        Dictionary result = abiarguments_pack(m_constructor->inputs, args);
+        if (int(result["error"]) != OK) {
+            ERR_PRINT(vformat("abiarguments pack constructor failed, errmsg: %s", result["errmsg"]));
             return arguments;
         }
+		arguments = result["packed"];
         return arguments;
     }
 
     ABIMethod* method = get_abimethod(name);
     ERR_FAIL_COND_V_MSG(method == nullptr , PackedByteArray(), "method " + name + " not found");
 
-    PackedByteArray arguments = abiarguments_pack(method->inputs, args);
-    // ERR_FAIL_COND_V_MSG(arguments.size() == 0 , PackedByteArray(), "arguments pack failed");
+    Dictionary result = abiarguments_pack(method->inputs, args);
+	if (int(result["error"])!= OK) {
+		ERR_PRINT(vformat("abiarguments pack failed, errmsg: %s", result["errmsg"]));
+		return arguments;
+	}
+	arguments = result["packed"];
 
     PackedByteArray res = method->id;
     res.append_array(arguments);

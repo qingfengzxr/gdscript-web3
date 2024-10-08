@@ -118,6 +118,8 @@ Dictionary Optimism::async_block_number(const Variant &id) {
 
 	Vector<String> p_params	= Vector<String>();
 	Dictionary request = jsonrpc->make_request("eth_blockNumber", p_params, id);
+
+	delete jsonrpc;
 	return request;
 }
 
@@ -134,11 +136,12 @@ Dictionary Optimism::send_transaction(const String &signed_tx, const Variant &id
 }
 
 Dictionary Optimism::async_send_transaction(const String &signed_tx, const Variant &id) {
-	JSONRPC* jsonrpc = new JSONRPC();
+	JSONRPC *jsonrpc = new JSONRPC();
 
 	Vector<String> p_params	= Vector<String>();
 	p_params.push_back(signed_tx);
 	Dictionary request = jsonrpc->make_request("eth_blockNumber", p_params, id);
+	delete jsonrpc;
 	return request;
 }
 
@@ -165,17 +168,21 @@ Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &blo
 // suggest_gas_price retrieves the currently suggested gas price to allow a timely
 // execution of a transaction.
 Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
-	Ref<BigInt> gas_price = Ref<BigInt>(memnew(BigInt));
-
 	Vector<Variant> p_params	= Vector<Variant>();
 	Dictionary result =  m_jsonrpc_helper->call_method("eth_gasPrice", p_params, id);
 	if (bool(result["success"]) == false) {
 		ERR_PRINT(
 			vformat("Failed with calling eth_gasPrice. errmsg: %s", result["errmsg"])
 		);
-		return gas_price;
+		return NULL;
 	}
 
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_gasPrice response body is empty.");
+		return NULL;
+	}
+
+	Ref<BigInt> gas_price = Ref<BigInt>(memnew(BigInt));
 	Ref<JSON> json = Ref<JSON>(memnew(JSON));
 	Dictionary res = json->parse_string(result["response_body"]);
 	gas_price->from_hex(res["result"]);

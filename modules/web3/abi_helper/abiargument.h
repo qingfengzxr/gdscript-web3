@@ -43,7 +43,7 @@ using ABIArguments = Vector<ABIArgumentMarshaling>;
 Argument fill_argument(const ABIArgumentMarshaling &abi_arg);
 
 ABIArguments non_indexed(const ABIArguments& args);
-PackedByteArray abiarguments_pack(const ABIArguments& abiargs, const Array& args);
+Dictionary abiarguments_pack(const ABIArguments& abiargs, const Array& args);
 // Error unpack_abiarguments_into_dictionary(const ABIArguments& abiargs, const PackedByteArray& data, Dictionary& result);
 // Error unpack_abiarguments_into_array(const ABIArguments& abiargs, const PackedByteArray& data, Array& result);
 Error unpack_abiarguments(const ABIArguments& abiargs, const PackedByteArray& data, Variant& result);

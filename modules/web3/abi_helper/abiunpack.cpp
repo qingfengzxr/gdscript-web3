@@ -1,118 +1,73 @@
 #include "abiunpack.h"
 
-// Error length_prefix_points_to(int index, const PackedByteArray& output, int& begin, int& length) {
-//     ERR_FAIL_COND_V_MSG(index + 32 > output.size(), ERR_INVALID_DATA,
-//         vformat("abi: length_prefix_points_to: offset would go over slice boundary. index: %d, output size: %d",
-// 			index, output.size()));
-
-//     // Extract 32 bytes of offset
-//     mpz_t offset;
-//     mpz_init(offset);
-//     mpz_import(offset, 32, 1, 1, 0, 0, output.ptr() + index);
-//     mpz_add_ui(offset, offset, 32);
-
-//     // Check if the offset exceeds the boundary of the output
-//     mpz_t output_size;
-//     mpz_init_set_ui(output_size, output.size());
-//     if (mpz_cmp(offset, output_size) > 0) {
-//         ERR_PRINT(vformat("abi: length_prefix_points_to: offset [%d] would go over slice boundary. outputsize: [%d]",
-// 								offset., output_size));
-//         mpz_clear(offset);
-//         mpz_clear(output_size);
-//         return ERR_INVALID_DATA;
-//     }
-
-//     // Check if the offset exceeds the maximum value of int64
-//     if (mpz_cmp_ui(offset, INT64_MAX) > 0) {
-//         ERR_PRINT("abi: offset larger than int64");
-//         mpz_clear(offset);
-//         mpz_clear(output_size);
-//         return ERR_INVALID_DATA;
-//     }
-
-//     int offset_end = mpz_get_ui(offset);
-
-//     // Extract length information
-//     mpz_t length_big;
-//     mpz_init(length_big);
-//     mpz_import(length_big, 32, 1, 1, 0, 0, output.ptr() + offset_end - 32);
-
-//     mpz_t total_size;
-//     mpz_init(total_size);
-//     mpz_add(total_size, offset, length_big);
-
-//     // Check if the total size exceeds the boundary of the output
-//     if (mpz_cmp(total_size, output_size) > 0) {
-//         ERR_PRINT("abi: cannot marshal into cpp type: length insufficient");
-//         mpz_clear(offset);
-//         mpz_clear(output_size);
-//         mpz_clear(length_big);
-//         mpz_clear(total_size);
-//         return ERR_INVALID_DATA;
-//     }
-
-//     // Check if the total size exceeds the maximum value of int64
-//     if (mpz_cmp_ui(total_size, INT64_MAX) > 0) {
-//         ERR_PRINT("abi: length larger than int64");
-//         mpz_clear(offset);
-//         mpz_clear(output_size);
-//         mpz_clear(length_big);
-//         mpz_clear(total_size);
-//         return ERR_INVALID_DATA;
-//     }
-
-//     begin = offset_end;
-//     length = mpz_get_ui(length_big);
-
-//     mpz_clear(offset);
-//     mpz_clear(output_size);
-//     mpz_clear(length_big);
-//     mpz_clear(total_size);
-
-//     return OK;
-// }
-
 Error length_prefix_points_to(int index, const PackedByteArray& output, int& begin, int& length) {
     ERR_FAIL_COND_V_MSG(index + 32 > output.size(), ERR_INVALID_DATA,
         vformat("abi: length_prefix_points_to: offset would go over slice boundary. index: %d, output size: %d",
-                index, output.size()));
+			index, output.size()));
 
     // Extract 32 bytes of offset
-    int64_t offset = 0;
-    std::memcpy(&offset, output.ptr() + index, 32);
-    offset += 32;
+    mpz_t offset;
+    mpz_init(offset);
+    mpz_import(offset, 32, 1, 1, 0, 0, output.ptr() + index);
+    mpz_add_ui(offset, offset, 32);
 
-    if (offset > output.size()) {
-        ERR_PRINT(vformat("abi: length_prefix_points_to: offset [%d] would go over slice boundary. output size: [%d]",
-                          offset, output.size()));
+    // Check if the offset exceeds the boundary of the output
+    mpz_t output_size;
+    mpz_init_set_ui(output_size, output.size());
+    if (mpz_cmp(offset, output_size) > 0) {
+        ERR_PRINT(vformat("abi: length_prefix_points_to: offset [%d] would go over slice boundary. outputsize: [%d]",
+								offset, output_size));
+        mpz_clear(offset);
+        mpz_clear(output_size);
         return ERR_INVALID_DATA;
     }
 
-    if (offset > INT64_MAX) {
+    // Check if the offset exceeds the maximum value of int64
+    if (mpz_cmp_ui(offset, INT64_MAX) > 0) {
         ERR_PRINT("abi: offset larger than int64");
+        mpz_clear(offset);
+        mpz_clear(output_size);
         return ERR_INVALID_DATA;
     }
 
-    int64_t offset_end = offset;
+    int offset_end = mpz_get_ui(offset);
 
-    // Extract length from the output
-    int64_t length_big = 0;
-    std::memcpy(&length_big, output.ptr() + offset_end - 32, 32);
+    // Extract length information
+    mpz_t length_big;
+    mpz_init(length_big);
+    mpz_import(length_big, 32, 1, 1, 0, 0, output.ptr() + offset_end - 32);
 
-    int64_t total_size = offset + length_big;
+    mpz_t total_size;
+    mpz_init(total_size);
+    mpz_add(total_size, offset, length_big);
 
-    if (total_size > INT64_MAX) {
+    // Check if the total size exceeds the boundary of the output
+    if (mpz_cmp(total_size, output_size) > 0) {
+        ERR_PRINT("abi: cannot marshal into cpp type: length insufficient");
+        mpz_clear(offset);
+        mpz_clear(output_size);
+        mpz_clear(length_big);
+        mpz_clear(total_size);
+        return ERR_INVALID_DATA;
+    }
+
+    // Check if the total size exceeds the maximum value of int64
+    if (mpz_cmp_ui(total_size, INT64_MAX) > 0) {
         ERR_PRINT("abi: length larger than int64");
+        mpz_clear(offset);
+        mpz_clear(output_size);
+        mpz_clear(length_big);
+        mpz_clear(total_size);
         return ERR_INVALID_DATA;
     }
 
-    if (total_size > output.size()) {
-        ERR_PRINT(vformat("abi: cannot marshal into go type: length insufficient %d require %d", output.size(), total_size));
-        return ERR_INVALID_DATA;
-    }
+    begin = offset_end;
+    length = mpz_get_ui(length_big);
 
-    begin = static_cast<int>(offset);
-    length = static_cast<int>(length_big);
+    mpz_clear(offset);
+    mpz_clear(output_size);
+    mpz_clear(length_big);
+    mpz_clear(total_size);
 
     return OK;
 }

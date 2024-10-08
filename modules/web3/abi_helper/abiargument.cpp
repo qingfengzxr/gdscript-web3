@@ -48,10 +48,16 @@ ABIArguments non_indexed(const ABIArguments& args) {
     return ret;
 }
 
-PackedByteArray abiarguments_pack(const ABIArguments& abiargs, const Array& args) {
+Dictionary abiarguments_pack(const ABIArguments& abiargs, const Array& args) {
+	Dictionary result;
+	result["error"] = OK;
+	result["errmsg"] = "";
+
 	// Ensure the number of passed arguments matches the number of arguments defined in the function
     if (args.size() != abiargs.size()) {
-        ERR_FAIL_V_MSG(PackedByteArray(), "argument count mismatch: got " + itos(args.size()) + " for " + itos(abiargs.size()));
+		result["error"] = ERR_INVALID_PARAMETER;
+		result["errmsg"] = "argument count mismatch: got " + itos(args.size()) + " for " + itos(abiargs.size());
+        ERR_FAIL_V_MSG(result, "argument count mismatch: got " + itos(args.size()) + " for " + itos(abiargs.size()));
     }
 
 	// variableInput is the output appended at the end of the packed output.
@@ -72,7 +78,9 @@ PackedByteArray abiarguments_pack(const ABIArguments& abiargs, const Array& args
         // pack the input
         PackedByteArray packed = input.argument.type->pack(a);
         if (packed.size() == 0) {
-            ERR_FAIL_V_MSG(PackedByteArray(), "packing error for argument " + itos(i));
+			result["error"] = FAILED;
+			result["errmsg"] = "packing error for argument " + itos(i);
+            ERR_FAIL_V_MSG(result, "packing error for argument " + itos(i));
         }
 
         #ifdef DEBUG_ENABLED_WED3_MODULE
@@ -96,8 +104,8 @@ PackedByteArray abiarguments_pack(const ABIArguments& abiargs, const Array& args
 
     // append the variable input to the end of the packed output
     ret.append_array(variableInput);
-
-    return ret;
+	result["packed"] = ret;
+    return result;
 }
 
 Error unpack_abiarguments(const ABIArguments& abiargs, const PackedByteArray& data, Variant& result) {
