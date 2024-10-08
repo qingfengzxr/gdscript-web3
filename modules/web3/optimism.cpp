@@ -118,10 +118,12 @@ Dictionary Optimism::async_block_number(const Variant &id) {
 
 	Vector<String> p_params	= Vector<String>();
 	Dictionary request = jsonrpc->make_request("eth_blockNumber", p_params, id);
+
+	delete jsonrpc;
 	return request;
 }
 
-// SendTransaction injects a signed transaction into the pending pool for execution.
+// send_transaction injects a signed transaction into the pending pool for execution.
 //
 // If the transaction was a contract creation use the TransactionReceipt method to get the
 // contract address after the transaction has been mined.
@@ -134,12 +136,67 @@ Dictionary Optimism::send_transaction(const String &signed_tx, const Variant &id
 }
 
 Dictionary Optimism::async_send_transaction(const String &signed_tx, const Variant &id) {
-	JSONRPC* jsonrpc = new JSONRPC();
+	JSONRPC *jsonrpc = new JSONRPC();
 
 	Vector<String> p_params	= Vector<String>();
 	p_params.push_back(signed_tx);
 	Dictionary request = jsonrpc->make_request("eth_blockNumber", p_params, id);
+	delete jsonrpc;
 	return request;
+}
+
+// call_contract executes a message call transaction, which is directly executed in the VM
+// of the node, but never mined into the blockchain.
+//
+// blockNumber selects the block height at which the call runs. It can be nil, in which
+// case the code is taken from the latest known block. Note that state from very old
+// blocks might not be available.
+Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id) {
+	Vector<Variant> p_params	= Vector<Variant>();
+
+	// first param: call msg
+	p_params.push_back(call_msg);
+	// second param: block number
+	if ( block_number == "" ) {
+		p_params.push_back("latest");
+	} else {
+		p_params.push_back(block_number);
+	}
+	return m_jsonrpc_helper->call_method("eth_call", p_params, id);
+}
+
+// suggest_gas_price retrieves the currently suggested gas price to allow a timely
+// execution of a transaction.
+Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
+	Vector<Variant> p_params	= Vector<Variant>();
+	Dictionary result =  m_jsonrpc_helper->call_method("eth_gasPrice", p_params, id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_gasPrice. errmsg: %s", result["errmsg"])
+		);
+		return NULL;
+	}
+
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_gasPrice response body is empty.");
+		return NULL;
+	}
+
+	Ref<BigInt> gas_price = Ref<BigInt>(memnew(BigInt));
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	Dictionary res = json->parse_string(result["response_body"]);
+	gas_price->from_hex(res["result"]);
+	return gas_price;
+}
+
+// EstimateGas tries to estimate the gas needed to execute a specific transaction based on
+// the current pending state of the backend blockchain. There is no guarantee that this is
+// the true gas limit requirement as other transactions may be added or removed by miners,
+// but it should provide a basis for setting a reasonable default.
+Dictionary Optimism::estimate_gas(const Dictionary &call_msg, const Variant &id) {
+	Vector<Variant> p_params	= Vector<Variant>();
+	p_params.push_back(call_msg);
+	return m_jsonrpc_helper->call_method("eth_estimateGas", p_params, id);
 }
 
 
@@ -158,6 +215,9 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("header_by_number", "number", "id"), &Optimism::header_by_number);
 	ClassDB::bind_method(D_METHOD("block_number", "id"), &Optimism::block_number);
 	ClassDB::bind_method(D_METHOD("send_transaction", "signed_tx", "id"), &Optimism::send_transaction);
+	ClassDB::bind_method(D_METHOD("call_contract", "call_msg", "block_number", "id"), &Optimism::call_contract);
+	ClassDB::bind_method(D_METHOD("suggest_gas_price", "id"), &Optimism::suggest_gas_price);
+	ClassDB::bind_method(D_METHOD("estimate_gas", "call_msg", "id"), &Optimism::estimate_gas);
 
 	// async jsonrpc method
 	ClassDB::bind_method(D_METHOD("async_block_number", "id"), &Optimism::async_block_number);

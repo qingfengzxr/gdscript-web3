@@ -53,7 +53,7 @@ func send_transaction():
 
 func test_expected_behavior():
 	print("------> start test jsonrpc request operations <------")
-	send_transaction()
+	#send_transaction()  # only can run once
 	print("------> test jsonrpc request done <------")
 	pass
 

@@ -342,7 +342,7 @@ PackedByteArray EthABIWrapper::encode_call(const String& funcName, const Array& 
 Variant EthABIWrapper::decode_call(const String& value, const Array& args)
 {
 	/*
-	前八位为函数选择器，后面按参数顺序获取
+	The first 8 characters are the function selector, followed by the parameters in order.
 	*/
 	struct eth_abi data;
 	CharString utf8Str = value.utf8();

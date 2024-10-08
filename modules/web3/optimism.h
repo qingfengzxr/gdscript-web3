@@ -11,6 +11,7 @@
 #include "core/variant/variant.h"
 #include "core/error/error_macros.h"
 #include "core/error/error_list.h"
+#include "core/io/json.h"
 
 #include "secp256k1_wrapper.h"
 #include "keccak_wrapper.h"
@@ -50,7 +51,9 @@ public:
 	// TODO: BlockReceipts()
 	Dictionary header_by_hash(const String &hash, const Variant &id);
 	Dictionary header_by_number(const Ref<BigInt> &number, const Variant &id);
-
+	Dictionary call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id);
+	Ref<BigInt> suggest_gas_price(const Variant &id = "gdweb3");
+	Dictionary estimate_gas(const Dictionary &call_msg, const Variant &id);
 
 	// async jsonrpc request method, base on JSONRPC class.
 	// Only return request dictionary

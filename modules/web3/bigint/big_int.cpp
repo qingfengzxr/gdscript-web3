@@ -31,6 +31,21 @@ String BigInt::to_hex() {
     return hex_string;
 }
 
+bool BigInt::from_hex(const String &hex_string) {
+    String hex_str = hex_string;
+    if (hex_str.begins_with("0x")) {
+        hex_str = hex_str.substr(2, hex_str.length() - 2);
+    }
+
+    CharString hex_cstr = hex_str.utf8();
+
+    if (mpz_set_str(m_number, hex_cstr.get_data(), 16) != 0) {
+        ERR_PRINT("Invalid hex string");
+        return false;
+    }
+	return true;
+}
+
 int BigInt::to_int() const {
     return static_cast<int>(mpz_get_si(m_number));
 }

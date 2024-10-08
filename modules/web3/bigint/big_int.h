@@ -26,7 +26,7 @@ public:
 	void set_bytes(uint8_t* bytes, size_t size);
     void from_string(String str);
     String get_string();
-	// TODO: from_hex()
+	bool from_hex(const String &hex_string);
 	String to_hex();
 	int to_int() const;
 

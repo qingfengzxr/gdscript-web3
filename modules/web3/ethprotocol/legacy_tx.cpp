@@ -135,9 +135,11 @@ PackedByteArray LegacyTx::rlp_hash() {
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_limit, NULL) < 0, PackedByteArray(), "rlp format gas limit failed");
 
 		// rlp format for to address
+		print_line("rlp_hash format to address start.");
 		CharString to_cstr = m_to.utf8();
 		char *to = to_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to) < 0, PackedByteArray(), "rlp format to address failed");
+		print_line("rlp_hash format to address done.");
 
 		// rlp format for value
 		CharString value_cstr = m_value->to_hex().utf8();
@@ -255,9 +257,11 @@ String LegacyTx::signedtx_marshal_binary() {
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &gas_limit, NULL) < 0, String(), "rlp format gas limit failed");
 
 		// rlp format for to address
+		print_line("rlp_hash format to address start.");
 		CharString to_cstr = m_to.utf8();
 		char *to = to_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_address(&rlp0, &to) < 0, String(), "rlp format to address failed");
+		print_line("rlp_hash format to address done.");
 
 		// rlp format for value
 		CharString value_cstr = m_value->to_hex().utf8();
