@@ -29,6 +29,8 @@ public:
 	bool from_hex(const String &hex_string);
 	String to_hex();
 	int to_int() const;
+	int to_int64() const;
+
 
     Ref<BigInt> add(const Ref<BigInt> other);
     Ref<BigInt> sub(const Ref<BigInt> other);

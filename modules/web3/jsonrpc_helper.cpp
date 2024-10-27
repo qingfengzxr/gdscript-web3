@@ -4,10 +4,10 @@
 
 JsonrpcHelper::JsonrpcHelper() {
 	// use https as default
-	m_port = 7545; // todo: need to let user set port
-	// just use for test.
-	// m_hostname = "https://optimism.llamarpc.com";
-    m_hostname = "https://rpc-sepolia.rockx.com";
+	m_port = 443;
+	// https://optimism.llamarpc.com
+	m_hostname = "";
+	m_path_url = "/";
 }
 
 JsonrpcHelper::~JsonrpcHelper() {
@@ -20,6 +20,14 @@ String JsonrpcHelper::get_hostname() const {
 
 void JsonrpcHelper::set_hostname(const String &hostname) {
     m_hostname = hostname;
+}
+
+String JsonrpcHelper::get_path_url() const {
+    return m_path_url;
+}
+
+void JsonrpcHelper::set_path_url(const String &path_url) {
+    m_path_url = path_url;
 }
 
 int JsonrpcHelper::get_port() const {
@@ -49,6 +57,8 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
 		delete jsonrpc;
         return call_result;
     }
+
+	print_line("jsonrpc_helper::call_method, hostname: " + m_hostname + ", port: " + itos(m_port));
 
     Error err = client->connect_to_host(m_hostname, m_port, nullptr);
     if (err != OK) {
@@ -100,7 +110,7 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
     }
 
     // send post request
-    err = client->request(HTTPClient::Method::METHOD_POST, "/", headers, uint8_array.ptr(), uint8_array.size());
+    err = client->request(HTTPClient::Method::METHOD_POST, m_path_url, headers, uint8_array.ptr(), uint8_array.size());
     if (err != OK) {
         ERR_PRINT("Error sending request.");
         call_result["success"] = false;
@@ -164,6 +174,8 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
 void JsonrpcHelper::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_hostname"), &JsonrpcHelper::get_hostname);
     ClassDB::bind_method(D_METHOD("set_hostname", "hostname"), &JsonrpcHelper::set_hostname);
+	ClassDB::bind_method(D_METHOD("get_path_url"), &JsonrpcHelper::get_path_url);
+    ClassDB::bind_method(D_METHOD("set_path_url", "path_url"), &JsonrpcHelper::set_path_url);
     ClassDB::bind_method(D_METHOD("get_port"), &JsonrpcHelper::get_port);
     ClassDB::bind_method(D_METHOD("set_port", "port"), &JsonrpcHelper::set_port);
 
