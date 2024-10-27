@@ -18,6 +18,7 @@ class JsonrpcHelper : public RefCounted {
 	GDCLASS(JsonrpcHelper, RefCounted);
 
 	String m_hostname;
+	String m_path_url;
 	int m_port;
 
 protected:
@@ -35,11 +36,13 @@ public:
 
 	String get_hostname() const;
 	void set_hostname(const String &hostname);
+	String get_path_url() const;
+	void set_path_url(const String &path_url);
 	int get_port() const;
 	void set_port(int port);
 
 	// base request method
-	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id, int timeout_ms = 5000);
+	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id, int timeout_ms = 20000);
 
 	String format_output(const String &p_text);
 };
