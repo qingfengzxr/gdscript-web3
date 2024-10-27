@@ -349,6 +349,41 @@ Dictionary Optimism::balance_at(const String &account, const Ref<BigInt> &block_
     return m_jsonrpc_helper->call_method("eth_getBalance", p_params, req_id);
 }
 
+uint64_t Optimism::nonce_at(const String &account, const Ref<BigInt> &block_number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    Vector<Variant> p_params;
+    p_params.push_back(account);
+    if (block_number != NULL && block_number->sgn() > 0) {
+        p_params.push_back(block_number->to_hex());
+    } else if (block_number == NULL || block_number->sgn() == 0) {
+        p_params.push_back("latest");
+    } else if (block_number->sgn() < 0) {
+        p_params.push_back(block_number_to_string(block_number->to_int64()));
+    }
+
+    Dictionary result = m_jsonrpc_helper->call_method("eth_getTransactionCount", p_params, req_id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_getTransactionCount. errmsg: %s", result["errmsg"])
+		);
+		return 0;
+	}
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_getTransactionCount response body is empty.");
+		return 0;
+	}
+	int64_t nonce = 0;
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	print_line("estimate_gas result: " + String(result["response_body"]));
+	Dictionary res = json->parse_string(result["response_body"]);
+	nonce = String(res["result"]).hex_to_int();
+	return uint64_t(nonce);
+}
 
 // send_transaction injects a signed transaction into the pending pool for execution.
 //
@@ -440,6 +475,8 @@ Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
 	return gas_price;
 }
 
+
+
 // EstimateGas tries to estimate the gas needed to execute a specific transaction based on
 // the current pending state of the backend blockchain. There is no guarantee that this is
 // the true gas limit requirement as other transactions may be added or removed by miners,
@@ -492,6 +529,7 @@ void Optimism::_bind_methods() {
     ClassDB::bind_method(D_METHOD("transaction_by_hash", "hash", "id"), &Optimism::transaction_by_hash, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("transaction_receipt_by_hash", "hash", "id"), &Optimism::transaction_receipt_by_hash, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("balance_at", "account", "block_number", "id"), &Optimism::balance_at, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("nonce_at", "account", "block_number", "id"), &Optimism::nonce_at, DEFVAL(Ref<BigInt>()), DEFVAL(Variant()));
 
     ClassDB::bind_method(D_METHOD("send_transaction", "signed_tx", "id"), &Optimism::send_transaction, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("call_contract", "call_msg", "block_number", "id"), &Optimism::call_contract, DEFVAL(""), DEFVAL(""));

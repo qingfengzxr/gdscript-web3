@@ -56,6 +56,7 @@ public:
 	Dictionary transaction_by_hash(const String &hash, const Variant &id = "");
 	Dictionary transaction_receipt_by_hash(const String &hash, const Variant &id);
 	Dictionary balance_at(const String &account, const Ref<BigInt> &block_number, const Variant &id = "");
+	uint64_t nonce_at(const String &account, const Ref<BigInt> &block_number = Ref<BigInt>(), const Variant &id = "");
 	// TODO: BalanceAtHash()
 	Dictionary send_transaction(const String &signed_tx, const Variant &id = "");
 
