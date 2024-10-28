@@ -50,6 +50,10 @@ int BigInt::to_int() const {
     return static_cast<int>(mpz_get_si(m_number));
 }
 
+int BigInt::to_int64() const {
+    return static_cast<int64_t>(mpz_get_si(m_number));
+}
+
 Ref<BigInt> BigInt::add(const Ref<BigInt> other) {
 	Ref<BigInt> result = Ref<BigInt>(memnew(BigInt));
 	mpz_add(result->m_number, this->m_number, other->m_number);
@@ -103,6 +107,7 @@ void BigInt::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_string"), &BigInt::get_string);
 	ClassDB::bind_method(D_METHOD("to_hex"), &BigInt::to_hex);
 	ClassDB::bind_method(D_METHOD("to_int"), &BigInt::to_int);
+	ClassDB::bind_method(D_METHOD("to_int64"), &BigInt::to_int64);
 
 	ClassDB::bind_method(D_METHOD("add"), &BigInt::add);
 	ClassDB::bind_method(D_METHOD("sub"), &BigInt::sub);
