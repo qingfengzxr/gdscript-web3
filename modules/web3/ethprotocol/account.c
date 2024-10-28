@@ -107,8 +107,8 @@ int eth_account_pubkey_get(char *dest, const struct eth_account *src) {
   return spub;
 }
 
-int eth_account_sign(struct eth_ecdsa_signature *dest,
-                    const struct eth_account *account, 
+int eth_account_signp(struct eth_ecdsa_signature *dest,
+                    const struct eth_account *account,
                     const uint8_t *data, size_t len) {
   uint8_t keccak[32];
 
@@ -116,6 +116,23 @@ int eth_account_sign(struct eth_ecdsa_signature *dest,
     return -1;
 
   if (eth_keccak256p(keccak, data, len) != 1)
+    return -1;
+
+  if (eth_ecdsa_sign(dest, account->privkey, keccak) != 1)
+    return -1;
+
+  return 1;
+}
+
+int eth_account_sign(struct eth_ecdsa_signature *dest,
+                    const struct eth_account *account,
+                    const uint8_t *data, size_t len) {
+  uint8_t keccak[32];
+
+  if (dest == NULL || account == NULL || data == NULL)
+    return -1;
+
+  if (eth_keccak256(keccak, data, len) != 1)
     return -1;
 
   if (eth_ecdsa_sign(dest, account->privkey, keccak) != 1)

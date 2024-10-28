@@ -513,7 +513,6 @@ int eth_rlp_address(struct eth_rlp *rlp, char **addr) {
 
   if (rlp->m == ETH_RLP_ENCODE) {
     if (*addr == NULL || strlen(*addr) == 0) {
-			printf("---> empty address\n");
       // Handle empty address, support deploy contract.
 			uint8_t empty_address = 0x00;
 			uint8_t *empty_address_ptr = &empty_address;

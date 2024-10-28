@@ -24,6 +24,14 @@ Ref<KeccakWrapper> Optimism::get_keccak_wrapper() {
 	return m_keccak;
 }
 
+Ref<EthAccount> Optimism::get_eth_account() {
+    return m_eth_account;
+}
+
+void Optimism::set_eth_account(const Ref<EthAccount> &account) {
+	m_eth_account = account;
+}
+
 String Optimism::get_rpc_url() const {
     return m_rpc_url;
 }
@@ -101,8 +109,92 @@ void Optimism::set_rpc_url(const String &url) {
     }
 }
 
+String Optimism::signed_transaction(const Dictionary &transaction) {
+	if (m_eth_account == NULL) {
+		ERR_PRINT("Eth account is not set.");
+		return "";
+	}
+
+	if (transaction.size() == 0) {
+		ERR_PRINT("Transaction data is empty.");
+		return "";
+	}
+
+	Ref<LegacyTx> tx = Ref<LegacyTx>(memnew(LegacyTx));
+
+	// deal with chain id
+	if (transaction.has("chainId")) {
+		Ref<BigInt> chain_id = Ref<BigInt>(memnew(BigInt));
+		chain_id->from_string(transaction["chainId"]);
+		tx->set_chain_id(chain_id);
+	} else {
+		Ref<BigInt> chain_id = this->chain_id();
+		tx->set_chain_id(chain_id);
+	}
+
+	// deal with nonce
+	if (transaction.has("nonce")) {
+		tx->set_nonce(transaction["nonce"]);
+	} else {
+		uint64_t nonce = this->nonce_at(m_eth_account->get_hex_address(), NULL);
+		tx->set_nonce(nonce);
+	}
+
+	// deal with gas price
+	if (transaction.has("gasPrice")) {
+		Ref<BigInt> gas_price = Ref<BigInt>(memnew(BigInt));
+		gas_price->from_string(transaction["gasPrice"]);
+		tx->set_gas_price(gas_price);
+	} else {
+		Ref<BigInt> gas_price = this->suggest_gas_price();
+		tx->set_gas_price(gas_price);
+	}
+
+	// deal with gas limit
+	// FIXME: has some bug for estimate_gas, need to fix.
+	if (transaction.hash("gasLimit")) {
+		tx->set_gas_limit(transaction["gasLimit"]);
+	} else {
+		tx->set_gas_limit(828516);
+	}
+
+	// deal with to address
+	if (transaction.has("to")) {
+		tx->set_to_address(transaction["to"]);
+	} else {
+		tx->set_to_address("");
+	}
+
+	// deal with value
+	if (transaction.has("value")) {
+		Ref<BigInt> value = Ref<BigInt>(memnew(BigInt));
+		value->from_string(transaction["value"]);
+		tx->set_value(value);
+	} else {
+		Ref<BigInt> value = Ref<BigInt>(memnew(BigInt));
+		value->from_string("0");
+		tx->set_value(value);
+	}
+
+	// deal with data
+	if (transaction.has("data")) {
+		tx->set_data(transaction["data"]);
+	} else {
+		tx->set_data(PackedByteArray());
+	}
+
+	int res = tx->sign_tx_by_account(m_eth_account);
+	if (res < 0) {
+		ERR_PRINT("Failed with sign_tx_by_account.");
+		return "";
+	}
+
+	return tx->signedtx_marshal_binary();
+}
+
+
 // chain_id() retrieves the current chain ID for transaction replay protection.
-Dictionary Optimism::chain_id(const Variant &id) {
+Ref<BigInt> Optimism::chain_id(const Variant &id) {
 	Variant req_id = id;
 	m_req_id++;
 	if (id == "") {
@@ -110,7 +202,23 @@ Dictionary Optimism::chain_id(const Variant &id) {
 	}
 
 	Vector<Variant> p_params	= Vector<Variant>();
-	return m_jsonrpc_helper->call_method("eth_chainId", p_params, req_id);
+	Dictionary result = m_jsonrpc_helper->call_method("eth_chainId", p_params, req_id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_chainId. errmsg: %s", result["errmsg"])
+		);
+		return 0;
+	}
+
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_chainId response body is empty.");
+		return 0;
+	}
+	Ref<BigInt> chain_id = Ref<BigInt>(memnew(BigInt));
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	Dictionary res = json->parse_string(result["response_body"]);
+	chain_id->from_hex(res["result"]);
+	return chain_id;
 }
 
 Dictionary Optimism::network_id(const Variant &id) {
@@ -349,6 +457,41 @@ Dictionary Optimism::balance_at(const String &account, const Ref<BigInt> &block_
     return m_jsonrpc_helper->call_method("eth_getBalance", p_params, req_id);
 }
 
+uint64_t Optimism::nonce_at(const String &account, const Ref<BigInt> &block_number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    Vector<Variant> p_params;
+    p_params.push_back(account);
+    if (block_number != NULL && block_number->sgn() > 0) {
+        p_params.push_back(block_number->to_hex());
+    } else if (block_number == NULL || block_number->sgn() == 0) {
+        p_params.push_back("latest");
+    } else if (block_number->sgn() < 0) {
+        p_params.push_back(block_number_to_string(block_number->to_int64()));
+    }
+
+    Dictionary result = m_jsonrpc_helper->call_method("eth_getTransactionCount", p_params, req_id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_getTransactionCount. errmsg: %s", result["errmsg"])
+		);
+		return 0;
+	}
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_getTransactionCount response body is empty.");
+		return 0;
+	}
+	int64_t nonce = 0;
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	print_line("estimate_gas result: " + String(result["response_body"]));
+	Dictionary res = json->parse_string(result["response_body"]);
+	nonce = String(res["result"]).hex_to_int();
+	return uint64_t(nonce);
+}
 
 // send_transaction injects a signed transaction into the pending pool for execution.
 //
@@ -363,9 +506,34 @@ Dictionary Optimism::send_transaction(const String &signed_tx, const Variant &id
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Dictionary ret = Dictionary();
+	ret["success"] = true;
+	ret["errmsg"] = "";
+
+	Vector<Variant> p_params = Vector<Variant>();
 	p_params.push_back(signed_tx);
-	return m_jsonrpc_helper->call_method("eth_sendRawTransaction", p_params, req_id);
+	Dictionary result = m_jsonrpc_helper->call_method("eth_sendRawTransaction", p_params, req_id);
+	if (bool(result["success"]) == false) {
+		ERR_PRINT(
+			vformat("Failed with calling eth_sendRawTransaction. errmsg: %s", result["errmsg"])
+		);
+		ret["success"] = false;
+		ret["errmsg"] = result["errmsg"];
+		return ret;
+	}
+	if (result["response_body"] == "") {
+		ERR_PRINT("eth_sendRawTransaction response body is empty.");
+		ret["success"] = false;
+		ret["errmsg"] = "response body is empty.";
+		return ret;
+	}
+	print_line("eth_sendRawTransaction result: " + String(result["response_body"]));
+	String tx_hash = "";
+	Ref<JSON> json = Ref<JSON>(memnew(JSON));
+	Dictionary res = json->parse_string(result["response_body"]);
+	tx_hash = String(res["result"]);
+	ret["txhash"] = tx_hash;
+	return ret;
 }
 
 Dictionary Optimism::async_send_transaction(const String &signed_tx, const Variant &id) {
@@ -440,6 +608,8 @@ Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
 	return gas_price;
 }
 
+
+
 // EstimateGas tries to estimate the gas needed to execute a specific transaction based on
 // the current pending state of the backend blockchain. There is no guarantee that this is
 // the true gas limit requirement as other transactions may be added or removed by miners,
@@ -479,6 +649,10 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keccak_wrapper"), &Optimism::get_keccak_wrapper);
     ClassDB::bind_method(D_METHOD("get_rpc_url"), &Optimism::get_rpc_url);
     ClassDB::bind_method(D_METHOD("set_rpc_url", "url"), &Optimism::set_rpc_url);
+	ClassDB::bind_method(D_METHOD("get_eth_account"), &Optimism::get_eth_account);
+	ClassDB::bind_method(D_METHOD("set_eth_account", "account"), &Optimism::set_eth_account);
+
+	ClassDB::bind_method(D_METHOD("signed_transaction", "transaction"), &Optimism::signed_transaction);
 
     // sync jsonrpc method
     ClassDB::bind_method(D_METHOD("chain_id", "id"), &Optimism::chain_id, DEFVAL(""));
@@ -492,6 +666,7 @@ void Optimism::_bind_methods() {
     ClassDB::bind_method(D_METHOD("transaction_by_hash", "hash", "id"), &Optimism::transaction_by_hash, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("transaction_receipt_by_hash", "hash", "id"), &Optimism::transaction_receipt_by_hash, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("balance_at", "account", "block_number", "id"), &Optimism::balance_at, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("nonce_at", "account", "block_number", "id"), &Optimism::nonce_at, DEFVAL(Ref<BigInt>()), DEFVAL(Variant()));
 
     ClassDB::bind_method(D_METHOD("send_transaction", "signed_tx", "id"), &Optimism::send_transaction, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("call_contract", "call_msg", "block_number", "id"), &Optimism::call_contract, DEFVAL(""), DEFVAL(""));
