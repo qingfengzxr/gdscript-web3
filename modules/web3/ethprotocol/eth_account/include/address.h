@@ -6,7 +6,10 @@ extern "C" {
 #endif
 
 #include "ethc-common.h"
+
+#include <ctype.h>
 #include <stddef.h>
+
 
 /**
  * @brief Checks whether the `addr` is an address or not.

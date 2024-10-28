@@ -8,6 +8,8 @@ extern "C" {
 #include "ethc-common.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*!
  * @brief Checks whether the given string is hex or not

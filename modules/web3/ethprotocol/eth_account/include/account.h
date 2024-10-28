@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ethc-common.h"
 #include "eth_ecdsa.h"

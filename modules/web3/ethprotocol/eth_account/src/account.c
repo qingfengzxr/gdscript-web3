@@ -1,11 +1,8 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include "account.h"
-#include "secp256k1.h"
 #include "hex.h"
 #include "internals.h"
 #include "keccak256.h"
+#include "secp256k1.h"
 
 int eth_account_create(struct eth_account *dest, const uint8_t *entropy) {
   uint8_t pubkey[64], privkey[32], keccak[32], r[64];

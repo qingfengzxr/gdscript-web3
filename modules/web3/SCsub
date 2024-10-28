@@ -13,6 +13,8 @@ include_paths = []
 library_paths = []
 libraries = []
 
+thirdparty_path = '#thirdparty/mbedtls/'
+
 # Parse the output
 for part in parts:
     if part.startswith('-I'):
@@ -28,8 +30,13 @@ module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
 module_env.add_source_files(env.modules_sources, "ethprotocol/*.c")
 module_env.add_source_files(env.modules_sources, "ethprotocol/*.cpp")
 module_env.add_source_files(env.modules_sources, "ethprotocol/eth_abi/*.cpp")
+module_env.add_source_files(env.modules_sources, "ethprotocol/eth_account/src/*.c")
+module_env.add_source_files(env.modules_sources, "ethprotocol/eth_account/src/*.cpp")
+module_env.add_source_files(env.modules_sources, "ethprotocol/eth_account/src/crypto/*.c")
+module_env.add_source_files(env.modules_sources, "ethprotocol/eth_account/src/wordlists/*.c")
 module_env.add_source_files(env.modules_sources, "bigint/*.cpp")
 module_env.add_source_files(env.modules_sources, "abi_helper/*.cpp")
+
 
 
 # Append CCFLAGS flags for both C and C++ code.
@@ -44,11 +51,15 @@ module_env.Append(CPPPATH=include_paths + ["./",
                                            "./libsecp256k1/src/modules/ecdh",
                                            "./libsecp256k1/src",
                                            "./libkeccak",
-                                           "./ethprotocol/eth_abi",
                                            "./ethprotocol",
+                                           "./ethprotocol/eth_abi",
+                                           "./ethprotocol/eth_account",
+                                           "./ethprotocol/eth_account/include",
                                            "./bigint",
                                            "./abi_helper"
                                            ])
+
+module_env.Append(CPPPATH=[thirdparty_path + 'include'])
 
 env.Append(LIBPATH=library_paths)
 env.Append(LIBS=libraries)

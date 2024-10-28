@@ -1,5 +1,5 @@
-#include <ctype.h>
 #include "address.h"
+
 #include "hex.h"
 #include "keccak256.h"
 #include "internals.h"
