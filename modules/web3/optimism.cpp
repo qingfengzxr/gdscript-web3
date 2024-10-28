@@ -152,7 +152,7 @@ String Optimism::signed_transaction(const Dictionary &transaction) {
 
 	// deal with gas limit
 	// FIXME: has some bug for estimate_gas, need to fix.
-	if (transaction.hash("gasLimit")) {
+	if (transaction.has("gasLimit")) {
 		tx->set_gas_limit(transaction["gasLimit"]);
 	} else {
 		tx->set_gas_limit(828516);
