@@ -43,13 +43,30 @@ public:
 	PackedByteArray get_address() const;
 
 	/**
+	 * @brief Get the hex format address of the account.
+	 * @return account's hex string address with '0x' prefix.
+	 */
+	String get_hex_address() const;
+
+	/**
 	 * @brief Get the mnemonic of the account.
 	 * @return Array of mnemonic strings.
 	 */
 	PackedStringArray get_mnemonic() const;
 
 	/**
-	 * @brief Sign data.
+	 * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
+	 *
+	 *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
+	 * @param data Byte array of the data to be signed.
+	 * @return Byte array of the signed data.
+	 */
+	PackedByteArray sign_data_with_prefix(const PackedByteArray &data) const;
+
+	/**
+	 * @brief Sign data by keccak256 hash.
+	 *
+	 *        Rule: keccak256(data).
 	 * @param data Byte array of the data to be signed.
 	 * @return Byte array of the signed data.
 	 */

@@ -14,6 +14,7 @@
 #include "rlp.h"
 #include "keccak256.h"
 #include "secp256k1_wrapper.h"
+#include "eth_account_wrapper.h"
 
 
 class LegacyTx : public RefCounted {
@@ -26,7 +27,6 @@ class LegacyTx : public RefCounted {
 	uint64_t m_nonce; // nonce of sender account
 	Ref<BigInt> m_gas_price; // wei per gas
 	uint64_t m_gas_limit; // gas limit
-	// TODO: @Wyatt, need to support Address object
 	String m_to; // null means contract creation
 	// To       *common.Address `rlp:"nil"`
 	Ref<BigInt> m_value; // wei amount
@@ -68,7 +68,18 @@ public:
 
 	// TODO: @cooper, support transaction functions
 	PackedByteArray rlp_hash();
+	PackedByteArray rlp_encode();
+
+	/**
+	 * @brief  Call this function to get the hash of the transaction.
+	 *
+	 *         Note: It nceessary to call after sign the transaction.
+	 * @return Byte array of the tx hash.
+	 */
+	PackedByteArray hash();
+
 	int sign_tx(Ref<Secp256k1Wrapper> signer);
+	int sign_tx_by_account(Ref<EthAccount> signer);
 	String signedtx_marshal_binary();
 	String get_nonce_hex() const;
 };

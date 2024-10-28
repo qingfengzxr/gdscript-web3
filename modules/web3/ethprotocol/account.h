@@ -30,6 +30,9 @@ ETHC_EXPORT int eth_account_privkey_get(char *dest,
                                         const struct eth_account *src);
 ETHC_EXPORT int eth_account_pubkey_get(char *dest,
                                        const struct eth_account *src);
+ETHC_EXPORT int eth_account_signp(struct eth_signed *dest,
+                                 const struct eth_account *account,
+                                 const uint8_t *data, size_t len);
 ETHC_EXPORT int eth_account_sign(struct eth_signed *dest,
                                  const struct eth_account *account,
                                  const uint8_t *data, size_t len);

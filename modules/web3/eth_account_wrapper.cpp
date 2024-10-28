@@ -16,8 +16,31 @@ PackedByteArray EthAccount::get_address() const {
 	return uint8PtrToPackedByteArray(account.address, sizeof(account.address));
 }
 
+String EthAccount::get_hex_address() const {
+	return "0x" + convert_to_hex(get_address());
+}
+
 PackedStringArray EthAccount::get_mnemonic() const {
 	return this->mnemonic;
+}
+
+PackedByteArray EthAccount::sign_data_with_prefix(const PackedByteArray &data) const {
+	struct eth_ecdsa_signature signature;
+	unsigned char signature_bytes[65] = { 0 };
+
+	// Call external library function to sign data
+	eth_account_signp(&signature, &account, data.ptr(), data.size());
+
+	// Copy signature data to result array
+	memcpy(signature_bytes, signature.r, sizeof(signature.r));
+	memcpy(signature_bytes + 32, signature.s, sizeof(signature.s));
+	signature_bytes[64] = signature.recid;
+
+	PackedByteArray result;
+	result.resize(65);
+	memcpy(result.ptrw(), signature_bytes, 65);
+
+	return result;
 }
 
 PackedByteArray EthAccount::sign_data(const PackedByteArray &data) const {
@@ -58,8 +81,10 @@ void EthAccount::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_private_key"), &EthAccount::get_private_key);
 	ClassDB::bind_method(D_METHOD("get_public_key"), &EthAccount::get_public_key);
 	ClassDB::bind_method(D_METHOD("get_address"), &EthAccount::get_address);
+	ClassDB::bind_method(D_METHOD("get_hex_address"), &EthAccount::get_hex_address);
 	ClassDB::bind_method(D_METHOD("get_mnemonic"), &EthAccount::get_mnemonic);
 	ClassDB::bind_method(D_METHOD("sign_data", "data"), &EthAccount::sign_data);
+	ClassDB::bind_method(D_METHOD("sign_data_with_prefix", "data"), &EthAccount::sign_data_with_prefix);
 }
 
 Ref<EthAccount> EthAccountManager::create_with_entropy(const PackedByteArray &entropy) {
@@ -97,6 +122,7 @@ Ref<EthAccount> EthAccountManager::from_mnemonic_key(const PackedStringArray &mn
 	// TODO: Implement logic to generate an account from mnemonic
 	// Future versions should implement the logic to generate an account from mnemonic.
 	// Refer to Ethereum's mnemonic generation algorithms, such as BIP-39 standard.
+	return NULL;
 }
 
 // Bind methods to the Godot scripting system
