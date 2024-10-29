@@ -5,7 +5,8 @@
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
-#include "ethprotocol/account.h"
+
+#include "account.h"
 
 
 /**
@@ -49,46 +50,32 @@ public:
 	String get_hex_address() const;
 
 	/**
-	 * @brief Get the mnemonic of the account.
-	 * @return Array of mnemonic strings.
-	 */
-	PackedStringArray get_mnemonic() const;
-
-	/**
-	 * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
-	 *
-	 *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
-	 * @param data Byte array of the data to be signed.
-	 * @return Byte array of the signed data.
-	 */
-	PackedByteArray sign_data_with_prefix(const PackedByteArray &data) const;
-
-	/**
-	 * @brief Sign data by keccak256 hash.
-	 *
-	 *        Rule: keccak256(data).
+	 * @brief Sign data.
 	 * @param data Byte array of the data to be signed.
 	 * @return Byte array of the signed data.
 	 */
 	PackedByteArray sign_data(const PackedByteArray &data) const;
 
 	/**
+ * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
+ *
+ *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
+ * @param data Byte array of the data to be signed.
+ * @return Byte array of the signed data.
+ */
+	PackedByteArray sign_data_with_prefix(const PackedByteArray &data) const;
+
+	/**
 	 * @brief Initialize the account.
 	 * @param m_account Account data structure.
 	 * @return True if initialization is successful, otherwise false.
 	 */
+
 	bool init(const struct eth_account *m_account);
 
 private:
 	struct eth_account account {}; ///< Internal Ethereum account data.
-	PackedStringArray mnemonic; ///< Mnemonic array.
-
-	/**
-	 * @brief Convert a byte array to a hexadecimal string.
-	 * @param byte_array Byte array to be converted.
-	 * @return Hexadecimal string representation.
-	 */
-	String convert_to_hex(const PackedByteArray &byte_array) const;
+	uint8_t pubKey33[33];
 };
 
 /**
@@ -111,39 +98,16 @@ public:
 	 * @brief Create a new Ethereum account.
 	 * @return The newly created account.
 	 */
-	Ref<EthAccount> create();
-
-	/**
-	 * @brief Create a new Ethereum account with entropy.
-	 * @param entropy Byte array of entropy used to create the account.
-	 * @return The newly created account.
-	 */
-	Ref<EthAccount> create_with_entropy(const PackedByteArray &entropy);
+	Ref<EthAccount> create(const PackedByteArray &entropy = {});
 
 	/**
 	 * @brief Create an Ethereum account from a private key.
 	 * @param privkey Byte array of the account's private key.
 	 * @return The account created from the private key.
 	 */
-	Ref<EthAccount> from_private_key(const PackedByteArray &privkey);
+	Ref<EthAccount> privateKeyToAccount(const PackedByteArray &privkey);
 
-	/**
-	 * @brief Create an Ethereum account from a mnemonic (to be implemented).
-	 * @param mnemonic Array of mnemonic strings.
-	 * @return The account created from the mnemonic (to be implemented in the future).
-	 */
-	Ref<EthAccount> from_mnemonic_key(const PackedStringArray &mnemonic);
 
-	/**
-	 * @brief Sign data.
-	 * @param account The account used for signing.
-	 * @param data Byte array of the data to be signed.
-	 * @return Byte array of the signed data.
-	 */
-	PackedByteArray sign_data(const Ref<EthAccount> &account, const PackedByteArray &data);
-
-private:
-	PackedStringArray mnemonic; ///< Internal mnemonic array.
 };
 
 #endif // _ETH_ACCOUNT_WRAPPER_H

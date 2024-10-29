@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 #include "ethc-common.h"
+
+#include <ctype.h>
 #include <stddef.h>
 
 /**

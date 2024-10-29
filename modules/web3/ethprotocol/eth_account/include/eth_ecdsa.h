@@ -7,17 +7,18 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
-#include "ethc-common.h"
+#include "libsecp256k1/include/secp256k1.h"
 
 /*! @brief Holds ECDSA signature */
 struct eth_ecdsa_signature {
-  /*! @brief R value */
-  uint8_t r[32];
-  /*! @brief S value */
-  uint8_t s[32];
-  /*! @brief Recovery id */
-  int recid;
+	/*! @brief R value */
+	uint8_t r[32];
+	/*! @brief S value */
+	uint8_t s[32];
+	/*! @brief Recovery id */
+	int recid;
 };
 
 #define eth_signed eth_ecdsa_signature
@@ -31,6 +32,8 @@ struct eth_ecdsa_signature {
  */
 int eth_ecdsa_pubkey_get(uint8_t *dest, const uint8_t *privkey);
 
+int eth_ecdsa_pubkey_get_with_compressed(uint8_t *dest, const uint8_t *privkey);
+
 /*!
  * @brief Creates an ECDSA signature.
  *
@@ -40,7 +43,12 @@ int eth_ecdsa_pubkey_get(uint8_t *dest, const uint8_t *privkey);
  * @return `1` on success, `-1` otherwise.
  */
 int eth_ecdsa_sign(struct eth_ecdsa_signature *dest, const uint8_t *privkey,
-                   const uint8_t *data32);
+		const uint8_t *data32);
+
+int seckey_tweak_add(unsigned char *seckey, const unsigned char *tweak);
+
+int pubkey_serialize(unsigned char *output, size_t *outputlen, const secp256k1_pubkey *pubkey, unsigned int flags);
+int pubkey_parse(secp256k1_pubkey *pubkey, const unsigned char *input, size_t input_len);
 
 #ifdef __cplusplus
 }
