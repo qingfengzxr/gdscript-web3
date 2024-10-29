@@ -1,7 +1,6 @@
 #ifndef ETHC_COMMON_H
 #define ETHC_COMMON_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,7 +12,6 @@ extern "C" {
 #else
 #define ETHC_EXPORT
 #endif
-
 
 #define EC_ADDRESS_KEY_LEN 20
 
@@ -37,7 +35,6 @@ extern "C" {
 #define EC_SIGNATURE_DER_MAX_LOW_R_LEN 70
 /** The length of a secp256k1 scalar value */
 #define EC_SCALAR_LEN 32
-
 
 #ifdef __cplusplus
 }

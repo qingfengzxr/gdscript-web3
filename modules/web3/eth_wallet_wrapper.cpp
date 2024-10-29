@@ -139,7 +139,7 @@ bool EthWallet::add(const PackedByteArray &privKey) {
 	}
 
 	account.instantiate();
-	account = accountMgr.from_private_key(uint8PtrToPackedByteArray(&childKey.priv_key[1], sizeof(childKey.priv_key) -1 ));
+	account = accountMgr.privateKeyToAccount(uint8PtrToPackedByteArray(&childKey.priv_key[1], sizeof(childKey.priv_key) -1 ));
 	accounts_.push_back(account);
 
 	return true;

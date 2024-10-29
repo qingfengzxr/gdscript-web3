@@ -44,6 +44,12 @@ public:
 	PackedByteArray get_address() const;
 
 	/**
+	 * @brief Get the hex format address of the account.
+	 * @return account's hex string address with '0x' prefix.
+	 */
+	String get_hex_address() const;
+
+	/**
 	 * @brief Sign data.
 	 * @param data Byte array of the data to be signed.
 	 * @return Byte array of the signed data.
@@ -51,10 +57,20 @@ public:
 	PackedByteArray sign_data(const PackedByteArray &data) const;
 
 	/**
+ * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
+ *
+ *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
+ * @param data Byte array of the data to be signed.
+ * @return Byte array of the signed data.
+ */
+	PackedByteArray sign_data_with_prefix(const PackedByteArray &data) const;
+
+	/**
 	 * @brief Initialize the account.
 	 * @param m_account Account data structure.
 	 * @return True if initialization is successful, otherwise false.
 	 */
+
 	bool init(const struct eth_account *m_account);
 
 private:

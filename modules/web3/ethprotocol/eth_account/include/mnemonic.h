@@ -3,8 +3,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 struct words;
 
@@ -18,9 +19,9 @@ struct words;
  * @bytes must be an even multiple of the number of bits in the wordlist used.
  */
 char *mnemonic_from_bytes(
-    const struct words *w,
-    const unsigned char *bytes,
-    size_t len);
+		const struct words *w,
+		const unsigned char *bytes,
+		size_t len);
 
 /**
  * Convert a mnemonic representation into a block of bytes.
@@ -32,10 +33,10 @@ char *mnemonic_from_bytes(
  * @written: Destination for the number of bytes written.
  */
 int mnemonic_to_bytes(
-    const struct words *w,
-    const char *mnemonic,
-    unsigned char *bytes_out,
-    size_t len,
-    size_t *written);
+		const struct words *w,
+		const char *mnemonic,
+		unsigned char *bytes_out,
+		size_t len,
+		size_t *written);
 
 #endif

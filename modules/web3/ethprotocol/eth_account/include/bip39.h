@@ -33,7 +33,7 @@ struct words;
  * .. note:: The string returned should be freed using `wally_free_string`.
  */
 int bip39_get_languages(
-    char **output);
+		char **output);
 
 /**
  * Get the default word list for a language.
@@ -44,8 +44,8 @@ int bip39_get_languages(
  * .. note:: The returned structure should not be freed or modified.
  */
 int bip39_get_wordlist(
-    const char *lang,
-    struct words **output);
+		const char *lang,
+		struct words **output);
 
 /**
  * Get the 'index'th word from a word list.
@@ -57,9 +57,9 @@ int bip39_get_wordlist(
  * The string returned should be freed using `wally_free_string`.
  */
 int bip39_get_word(
-    const struct words *w,
-    size_t index,
-    char **output);
+		const struct words *w,
+		size_t index,
+		char **output);
 
 /**
  * Get the 'index'th word from a word list.
@@ -72,8 +72,8 @@ int bip39_get_word(
  *     written to or freed.
  */
 const char *bip39_get_word_by_index(
-    const struct words *w,
-    size_t index);
+		const struct words *w,
+		size_t index);
 
 /**
  * Generate a mnemonic sentence from the entropy in ``bytes``.
@@ -86,10 +86,10 @@ const char *bip39_get_word_by_index(
  * .. note:: The string returned should be freed using `wally_free_string`.
  */
 int bip39_mnemonic_from_bytes(
-    const struct words *w,
-    const unsigned char *bytes,
-    size_t bytes_len,
-    char **output);
+		const struct words *w,
+		const unsigned char *bytes,
+		size_t bytes_len,
+		char **output);
 
 /**
  * Convert a mnemonic sentence into entropy at ``bytes_out``.
@@ -101,11 +101,11 @@ int bip39_mnemonic_from_bytes(
  * :param written: Destination for the number of bytes written to ``bytes_out``.
  */
 int bip39_mnemonic_to_bytes(
-    const struct words *w,
-    const char *mnemonic,
-    unsigned char *bytes_out,
-    size_t len,
-    size_t *written);
+		const struct words *w,
+		const char *mnemonic,
+		unsigned char *bytes_out,
+		size_t len,
+		size_t *written);
 
 /**
  * Validate the checksum embedded in a mnemonic sentence.
@@ -114,8 +114,8 @@ int bip39_mnemonic_to_bytes(
  * :param mnemonic: Mnemonic to validate.
  */
 int bip39_mnemonic_validate(
-    const struct words *w,
-    const char *mnemonic);
+		const struct words *w,
+		const char *mnemonic);
 
 /**
  * Convert a mnemonic into a binary seed.
@@ -127,11 +127,11 @@ int bip39_mnemonic_validate(
  * :param written: Destination for the number of bytes written to ``bytes_out``.
  */
 int bip39_mnemonic_to_seed(
-    const char *mnemonic,
-    const char *passphrase,
-    unsigned char *bytes_out,
-    size_t len,
-    size_t *written);
+		const char *mnemonic,
+		const char *passphrase,
+		unsigned char *bytes_out,
+		size_t len,
+		size_t *written);
 
 /**
  * Convert a mnemonic into a binary seed of 512 bits.
@@ -144,10 +144,10 @@ int bip39_mnemonic_to_seed(
  * .. note:: Identical to `bip39_mnemonic_to_seed` but returns a fixed size buffer.
  */
 int bip39_mnemonic_to_seed512(
-    const char *mnemonic,
-    const char *passphrase,
-    unsigned char *bytes_out,
-    size_t len);
+		const char *mnemonic,
+		const char *passphrase,
+		unsigned char *bytes_out,
+		size_t len);
 
 #ifdef __cplusplus
 }

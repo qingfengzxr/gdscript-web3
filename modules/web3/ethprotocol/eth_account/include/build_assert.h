@@ -23,8 +23,10 @@
  *		return (char *)foo;
  *	}
  */
-#define BUILD_ASSERT(cond) \
-	do { (void) sizeof(char [1 - 2*!(cond)]); } while(0)
+#define BUILD_ASSERT(cond)                   \
+	do {                                     \
+		(void)sizeof(char[1 - 2 * !(cond)]); \
+	} while (0)
 
 /**
  * BUILD_ASSERT_OR_ZERO - assert a build-time dependency, as an expression.
@@ -39,7 +41,7 @@
  *		  + BUILD_ASSERT_OR_ZERO(offsetof(struct foo, string) == 0))
  */
 #define BUILD_ASSERT_OR_ZERO(cond) \
-	(sizeof(char [1 - 2*!(cond)]) - 1)
+	(sizeof(char[1 - 2 * !(cond)]) - 1)
 
 #ifdef _WIN32
 #define ETHC_EXPORT __declspec(dllexport)
@@ -48,6 +50,5 @@
 #else
 #define ETHC_EXPORT
 #endif
-
 
 #endif //BUILD_ASSERT_H

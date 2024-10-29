@@ -3,22 +3,11 @@
 #include "thirdparty/mbedtls/include/mbedtls/pkcs5.h"
 #include "thirdparty/mbedtls/include/mbedtls/sha256.h"
 
+#include "account_utils.h"
 #include "mnemonic.h"
 #include "wordlist.h"
-#include "account_utils.h"
 
 #include "../wordlists/english.c"
-
-#define BUILD_MINIMAL 1
-
-#ifndef BUILD_MINIMAL
-#include "wordlists/chinese_simplified.c"
-#include "wordlists/chinese_traditional.c"
-#include "wordlists/french.c"
-#include "wordlists/italian.c"
-#include "wordlists/japanese.c"
-#include "wordlists/spanish.c"
-#endif
 
 /** Valid entropy lengths */
 #define BIP39_ENTROPY_LEN_128 16
@@ -43,29 +32,7 @@ static const struct {
 	const struct words *words;
 } lookup[] = {
 	{ "en", &en_words },
-#ifndef BUILD_MINIMAL
-	{ "es", &es_words },
-	{ "fr", &fr_words },
-	{ "it", &it_words },
-	{ "jp", &jp_words },
-	{ "zhs", &zhs_words },
-	{ "zht", &zht_words },
-/* FIXME: Should 'zh' map to traditional or simplified? */
-#endif
 };
-
-/*
-int bip39_get_languages(char **output)
-{
-	if (!output)
-		return WALLY_EINVAL;
-#ifndef BUILD_MINIMAL
-	*output = wally_strdup("en es fr it jp zhs zht");
-#else
-	*output = wally_strdup("en");
-#endif
-	return *output ? WALLY_OK : WALLY_ENOMEM;
-}*/
 
 int bip39_get_wordlist(const char *lang, struct words **output) {
 	size_t i;

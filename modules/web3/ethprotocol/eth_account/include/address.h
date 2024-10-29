@@ -10,7 +10,6 @@ extern "C" {
 #include <ctype.h>
 #include <stddef.h>
 
-
 /**
  * @brief Checks whether the `addr` is an address or not.
  *
