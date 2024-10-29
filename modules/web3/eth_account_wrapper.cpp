@@ -57,6 +57,7 @@ void EthAccount::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_public_key"), &EthAccount::get_public_key);
 	ClassDB::bind_method(D_METHOD("get_address"), &EthAccount::get_address);
 	ClassDB::bind_method(D_METHOD("sign_data", "data"), &EthAccount::sign_data);
+	ClassDB::bind_method(D_METHOD("sign_data_with_prefix", "data"), &EthAccount::sign_data_with_prefix);
 }
 
 Ref<EthAccount> EthAccountManager::create(const PackedByteArray &entropy) {
