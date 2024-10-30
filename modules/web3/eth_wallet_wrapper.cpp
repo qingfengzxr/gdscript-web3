@@ -155,7 +155,7 @@ bool EthWallet::remove_address(PackedByteArray address) {
 	return false;
 }
 
-bool EthWallet::remove(size_t index) {
+bool EthWallet::remove(uint64_t index) {
 	return index < accounts_.size() ? (accounts_.remove_at(index), true) : false;
 }
 

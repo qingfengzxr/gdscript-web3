@@ -121,7 +121,7 @@ public:
 	 * @param index The index of the account to be removed.
 	 * @return True if the account was successfully removed; false if the index is invalid.
 	 */
-	bool remove(size_t index);
+	bool remove(uint64_t index);
 
 	bool encrypt(PackedStringArray password);
 
