@@ -34,6 +34,19 @@ PackedStringArray mnemonic_to_packed_string_array(const char *mnemonic_str) {
 	return packed_array;
 }
 
+static String packed_string_array_to_string(const PackedStringArray& p_array) {
+	String result;
+
+	for (int i = 0; i < p_array.size(); ++i) {
+		if (i > 0) {
+			result += " ";
+		}
+		result += p_array[i];
+	}
+
+	return result;
+}
+
 EthWallet::EthWallet(int account_number, const PackedByteArray &entropy, const String &passphrase, Error *r_error) {
 	if (r_error) {
 		*r_error = OK;
@@ -64,8 +77,7 @@ EthWallet::EthWallet(const PackedStringArray &mnemonic, const String &passphrase
 	if (r_error) {
 		*r_error = OK;
 	}
-	printf("%s\n",mnemonic.ptr()->utf8().get_data());
-	const char *mnemonic_str = mnemonic.ptr()->utf8().get_data();
+	const char *mnemonic_str = packed_string_array_to_string(mnemonic).utf8().ptr();
 	if (!validate_mnemonic(mnemonic_str)) {
 		if (r_error) {
 			*r_error = FAILED;
@@ -222,8 +234,10 @@ Ref<EthWallet> EthWalletManager::from_mnemonic(const PackedStringArray &mnemonic
 	Error r_error = OK;
 	hd_wallet.instantiate(mnemonic, passphrase, &r_error);
 
-	if (!hd_wallet.is_valid()) {
-		return hd_wallet;
+	if (hd_wallet.is_valid()) {
+		if (r_error == OK) {
+			return hd_wallet;
+		}
 	}
 	return Ref<EthWallet>();
 }
