@@ -7,6 +7,7 @@
 #include "core/variant/variant.h"
 
 #include "abiargument.h"
+#include "keccak256.h"
 
 struct ABIError {
     String name;
@@ -25,6 +26,8 @@ struct ABIError {
 
     ABIError(const String& name_, const ABIArguments& inputs_, const String& str_, const String& sig_, const PackedByteArray& id_)
         : name(name_), inputs(inputs_), str(str_), sig(sig_), id(id_) {}
+
+	Error unpack(const PackedByteArray &data, Variant& result) const;
 };
 
 ABIError* NewABIError(const String &name, ABIArguments inputs);

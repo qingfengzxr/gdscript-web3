@@ -35,6 +35,22 @@ struct ABIArgumentMarshaling {
     Argument argument;
 
 	void unmarshal(const Dictionary &dict);
+
+    void format_output() const {
+        print_line("ABIArgumentMarshaling {");
+        print_line("  name: " + name + ",");
+        print_line("  type: " + type + ",");
+        print_line("  internalType: " + internalType + ",");
+        print_line("  indexed: " + String(indexed ? "true" : "false") + ",");
+        print_line("  components: [");
+        for (int i = 0; i < components.size(); ++i) {
+            components[i].format_output();
+        }
+        print_line("  ],");
+        print_line("  argument: ");
+        argument.format_output();
+        print_line("}");
+    }
 };
 
 using ABIArguments = Vector<ABIArgumentMarshaling>;

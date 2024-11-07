@@ -72,10 +72,8 @@ public:
 
     ABIArguments get_arguments(const String &name, const PackedByteArray &data);
 
-    // -----------------------------------
-    // debug functions
-    bool debug_show_abimethods();
-    Variant json_test(const String &json_str);
+	// debug methods
+	void format_output() const;
 };
 
 #endif // ABI_HELPER_H

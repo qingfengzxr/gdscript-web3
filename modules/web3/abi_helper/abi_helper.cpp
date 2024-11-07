@@ -48,6 +48,18 @@ ABIHelper::~ABIHelper() {
     }
 }
 
+void ABIHelper::format_output() const {
+    print_line("ABIHelper {");
+
+    print_line("  methods: [");
+    for (int i = 0; i < m_methods.size(); ++i) {
+        m_methods[i]->format_output();
+    }
+    print_line("  ]");
+
+    print_line("}");
+}
+
 PackedByteArray ABIHelper::pack(String name, const Array &args) {
 	PackedByteArray arguments;
     if ( name == "" ) {
@@ -270,7 +282,7 @@ bool ABIHelper::has_receive() {
 bool ABIHelper::unmarshal_from_json(const String &json_str) {
     Vector<Field> fields = unmarshal_json_to_fieldlist(json_str);
 
-    for (const auto &v: fields) {
+    for (auto &v: fields) {
         // printf("type: %s, name: %s\n", v.type.utf8().get_data(), v.name.utf8().get_data());
 
         String fieldType = v.type;
@@ -362,21 +374,6 @@ int ABIHelper::abierror_count() {
     return m_errors.size();
 }
 
-// convert mpz_t to String
-String mpz_to_string(const mpz_t &value) {
-    char *str = mpz_get_str(nullptr, 10, value);
-    String result(str);
-    free(str);
-    return result;
-}
-
-// create a new mpz_t from an integer
-mpz_t* create_mpz(int64_t value) {
-    mpz_t* result = (mpz_t*)malloc(sizeof(mpz_t));
-    mpz_init_set_si(*result, value);
-    return result;
-}
-
 void ABIHelper::_bind_methods() {
     ClassDB::bind_method(D_METHOD("unmarshal_from_json", "json_str"), &ABIHelper::unmarshal_from_json);
     ClassDB::bind_method(D_METHOD("abimethod_count"), &ABIHelper::abimethod_count);
@@ -385,4 +382,6 @@ void ABIHelper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "name", "args"), &ABIHelper::pack);
 	ClassDB::bind_method(D_METHOD("unpack_into_dictionary", "name", "data", "result"), &ABIHelper::unpack_into_dictionary);
 	ClassDB::bind_method(D_METHOD("unpack_into_array", "name", "data", "result"), &ABIHelper::unpack_into_array);
+
+	ClassDB::bind_method(D_METHOD("format_output"), &ABIHelper::format_output);
 }

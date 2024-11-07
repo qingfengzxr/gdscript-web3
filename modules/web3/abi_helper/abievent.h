@@ -7,6 +7,7 @@
 #include "core/variant/variant.h"
 
 #include "abiargument.h"
+#include "keccak256.h"
 
 struct ABIEvent {
 	// Name is the event name used for internal representation. It's derived from
@@ -33,9 +34,10 @@ struct ABIEvent {
 
 	// ID returns the canonical representation of the event's signature used by the
 	// abi definition to identify event names and types.
+	// It's a hash id.
     PackedByteArray id;
 
-    ABIEvent(const String& name_, const String& raw_name_, bool anonymous_, const ABIArguments& inputs_, const String& str_, const String& sig_, const PackedByteArray& id_)
+    ABIEvent(const String& name_, const String& raw_name_, bool anonymous_, ABIArguments& inputs_, const String& str_, const String& sig_, const PackedByteArray& id_)
         : name(name_), raw_name(raw_name_), anonymous(anonymous_), inputs(inputs_), str(str_), sig(sig_), id(id_) {}
 };
 
