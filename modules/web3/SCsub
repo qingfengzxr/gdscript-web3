@@ -64,6 +64,11 @@ module_env.Append(CPPPATH=[thirdparty_path + 'include'])
 env.Append(LIBPATH=library_paths)
 env.Append(LIBS=libraries)
 
+# when you want debug memory allocation or crash, uncomment the following lines
+#env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
+#env.Append(CPPFLAGS=['-fsanitize=address'])
+#env.Append(LINKFLAGS=['-fsanitize=address'])
+
 # Add the compile define options for keccak library
 module_env.Append(CPPDEFINES=['XKCP_has_Sponge_Keccak', 'XKCP_has_FIPS202', 'XKCP_has_KeccakP1600'])
 
