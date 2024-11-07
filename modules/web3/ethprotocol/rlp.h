@@ -12,7 +12,7 @@ extern "C" {
 
 #define ETH_RLP_ENCODE 0
 #define ETH_RLP_DECODE 1
-#define ETHC_RLP_FRAME_INITIAL_SIZE 1024
+#define ETHC_RLP_FRAME_INITIAL_SIZE 81920
 
 struct eth_rlp {
   struct ethc_rlp_frame *cframe;

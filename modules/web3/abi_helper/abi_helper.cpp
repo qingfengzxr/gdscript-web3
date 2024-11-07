@@ -1,38 +1,52 @@
 #include "abi_helper.h"
 
 ABIHelper::ABIHelper() {
+    m_methods.clear();
+    m_events.clear();
+    m_errors.clear();
+
+    m_methods_index.clear();
+    m_events_index.clear();
+    m_errors_index.clear();
+
     m_constructor = nullptr;
     m_fallback = nullptr;
     m_receive = nullptr;
 }
 
 ABIHelper::~ABIHelper() {
-    for (int i = 0; i < m_methods.size(); ++i) {
-        if (m_methods[i]) {
-            memdelete(m_methods.write[i]);
-            m_methods.write[i] = nullptr;
-        }
-    }
-    m_methods.clear();
-    m_methods_index.clear();
+	if (m_methods.size() > 0) {
+		for (int i = 0; i < m_methods.size(); ++i) {
+			if (m_methods[i]) {
+				memdelete(m_methods.write[i]);
+				m_methods.write[i] = nullptr;
+			}
+		}
+		m_methods.clear();
+		m_methods_index.clear();
+	}
 
-    for (int i = 0; i < m_events.size(); ++i) {
-        if (m_events[i]) {
-            memdelete(m_events.write[i]);
-            m_events.write[i] = nullptr;
-        }
-    }
-    m_events.clear();
-    m_events_index.clear();
+	if (m_events.size() > 0) {
+		for (int i = 0; i < m_events.size(); ++i) {
+			if (m_events[i]) {
+				memdelete(m_events.write[i]);
+				m_events.write[i] = nullptr;
+			}
+		}
+		m_events.clear();
+		m_events_index.clear();
+	}
 
-    for (int i = 0; i < m_errors.size(); ++i) {
-        if (m_errors[i]) {
-            memdelete(m_errors.write[i]);
-            m_errors.write[i] = nullptr;
-        }
-    }
-    m_errors.clear();
-    m_errors_index.clear();
+	if (m_errors.size() > 0) {
+		for (int i = 0; i < m_errors.size(); ++i) {
+			if (m_errors[i]) {
+				memdelete(m_errors.write[i]);
+				m_errors.write[i] = nullptr;
+			}
+		}
+		m_errors.clear();
+		m_errors_index.clear();
+	}
 
     if (m_constructor) {
         memdelete(m_constructor);

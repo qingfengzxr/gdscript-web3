@@ -117,11 +117,16 @@ PackedByteArray LegacyTx::rlp_hash() {
 	// Get the rlp format of the transaction
 	ERR_FAIL_COND_V_MSG(eth_rlp_init(&rlp0, ETH_RLP_ENCODE) < 0, PackedByteArray(), "eth_rlp_init failed");
 
-	ERR_FAIL_COND_V_MSG(eth_rlp_array(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
+	// ERR_FAIL_COND_V_MSG(eth_rlp_array(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
+	if (eth_rlp_array(&rlp0) < 0) {
+		ERR_PRINT("eth_rlp_init failed");
+		eth_rlp_free(&rlp0);
+		return PackedByteArray();
+	}
 		// rlp format for nonce
 		// char* nonce = const_cast<char*>(this->get_nonce_hex().utf8().get_data());
 		CharString nonce_cstr = this->get_nonce_hex().utf8();
-		char* nonce = nonce_cstr.ptrw();
+		char *nonce = nonce_cstr.ptrw();
 		ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &nonce, NULL) < 0, PackedByteArray(), "rlp format nonce failed");
 
 		// rlp format for gas price
@@ -176,15 +181,28 @@ PackedByteArray LegacyTx::rlp_hash() {
 			ERR_FAIL_COND_V_MSG(eth_rlp_hex(&rlp0, &s, NULL) < 0, PackedByteArray(), "rlp format s failed");
 		}
 
-	ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, PackedByteArray(), "eth_rlp_array failed");
+	// ERR_FAIL_COND_V_MSG(eth_rlp_array_end(&rlp0) < 0, PackedByteArray(), "eth_rlp_array end failed");
+	if (eth_rlp_array_end(&rlp0) < 0) {
+		ERR_PRINT("eth_rlp_array end failed");
+		eth_rlp_free(&rlp0);
+		return PackedByteArray();
+	}
 
 	ERR_FAIL_COND_V_MSG(eth_rlp_to_bytes(&rlp0_bytes, &rlp0_len, &rlp0) < 0, PackedByteArray(), "eth_rlp_to_bytes failed");
 	ERR_FAIL_COND_V_MSG(eth_rlp_free(&rlp0) < 0, PackedByteArray(), "eth_rlp_free failed");
 
+	if (data_bytes != NULL) {
+		free(data_bytes);
+		data_bytes = NULL;
+	}
+
 	// compute the keccak hash of the rlp encoded transaction
 	uint8_t hash[32];
 	eth_keccak256(hash, rlp0_bytes, rlp0_len);
-    free(rlp0_bytes);
+	if (rlp0_bytes != NULL) {
+	    free(rlp0_bytes);
+		rlp0_bytes = NULL;
+	}
 
 	PackedByteArray result;
 	result.resize(32);

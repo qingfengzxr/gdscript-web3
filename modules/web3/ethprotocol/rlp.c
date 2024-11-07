@@ -57,8 +57,9 @@ int eth_rlp_array(struct eth_rlp *rlp) {
   cframe = rlp->cframe;
 
   if (rlp->m == ETH_RLP_ENCODE) {
-    if (eth_rlp_frame_init(&nframe, NULL, 0) <= 0)
+    if (eth_rlp_frame_init(&nframe, NULL, 0) <= 0) {
       return -1;
+		}
 
     nframe->pframe = cframe;
     rlp->cframe = nframe;
@@ -66,8 +67,9 @@ int eth_rlp_array(struct eth_rlp *rlp) {
   }
 
   if (rlp->m == ETH_RLP_DECODE) {
-    if (eth_rlp_len(rlp, NULL, &base) <= 0)
+    if (eth_rlp_len(rlp, NULL, &base) <= 0) {
       return -1;
+		}
 
     if (base != 0xc0 && base != 0xf7)
       return -1;
@@ -86,15 +88,23 @@ int eth_rlp_array_end(struct eth_rlp *rlp) {
     return -1;
 
   cframe = rlp->cframe;
+  if (cframe == NULL)
+    return -1;
+
   pframe = cframe->pframe;
+  if (pframe == NULL)
+    return -1;
 
   if (rlp->m == ETH_RLP_ENCODE) {
     base = cframe->len <= 0x37 ? 0xc0 : 0xf7;
 
     rlp->cframe = pframe;
 
-    if (eth_rlp_len(rlp, &(cframe->len), &base) <= 0)
+    if (eth_rlp_len(rlp, &(cframe->len), &base) <= 0) {
+      free(cframe->buf);
+      free(cframe);
       return -1;
+    }
 
     memcpy(&(pframe->buf[pframe->offset]), cframe->buf, cframe->len);
     pframe->offset += cframe->len;
@@ -239,11 +249,6 @@ int eth_rlp_bytes(struct eth_rlp *rlp, uint8_t **bytes, size_t *len) {
     if (eth_rlp_len(rlp, len, &base) <= 0)
       return -1;
 
-    // if (cframe->len < *len) {
-    //     free(buf);
-    //     return -1;
-    // }
-
     memcpy(&(cframe->buf[cframe->offset]), *bytes, *len);
     cframe->offset += *len;
     cframe->len += *len;
@@ -252,9 +257,6 @@ int eth_rlp_bytes(struct eth_rlp *rlp, uint8_t **bytes, size_t *len) {
 
   if (rlp->m == ETH_RLP_DECODE) {
     if (eth_rlp_len(rlp, len, &base) <= 0)
-      return -1;
-
-    if (base != 0x00 && base != 0x80)
       return -1;
 
     buf = (uint8_t*)malloc(sizeof(uint8_t) * (*len));
@@ -610,21 +612,29 @@ int eth_rlp_from_hex(struct eth_rlp *dest, char *hex, int len) {
   if ((sbuf = eth_hex_to_bytes(&buf, hex, len)) <= 0)
     return -1;
 
-  if (eth_rlp_frame_init(&nframe, buf, sbuf) <= 0)
+	if (eth_rlp_frame_init(&nframe, buf, sbuf) <= 0) {
+    free(buf);
     return -1;
+   }
 
   dest->cframe = nframe;
   dest->m = ETH_RLP_DECODE;
+	free(buf);
   return 1;
 }
 
 int eth_rlp_free(struct eth_rlp *dest) {
-  struct ethc_rlp_frame *cframe;
   if (dest == NULL)
     return -1;
 
-  cframe = dest->cframe;
+  struct ethc_rlp_frame *cframe = dest->cframe;
 
-  free(cframe->buf);
+  while (cframe != NULL) {
+    struct ethc_rlp_frame *pframe = cframe->pframe;
+    free(cframe->buf);
+    free(cframe);
+    cframe = pframe;
+  }
+
   return 1;
 }
