@@ -25,7 +25,7 @@ Godot is completely free and open source under the permissive MIT license. Users
 
 ## Support Godot Version
 
-At this stage, we are developing based on `4.2.2-stable` version. Currently, we only guarantee upward compatibility. Therefore, when you use the program compiled from this project to extend development on older game projects, please pay attention to the version number of the Godot engine program you originally used.
+At this stage, we are developing based on `4.3-stable` version. Currently, we only guarantee upward compatibility. Therefore, when you use the program compiled from this project to extend development on older game projects, please pay attention to the version number of the Godot engine program you originally used.
 
 ## Getting Started
 
@@ -80,7 +80,12 @@ scons platform=osx arch=arm64
 
 
 ### Using the Released Version
-TODO
+The latest version is `v0.0.2-alpha`.
+
+>However, it is not production-ready yet. We will expedite the process as soon as possible.
 
 ## SDK Usage Introduction
 TODO
+
+## Example Project
+1.[TetrisDemo](https://github.com/hallazie/TetrisDemo)
