@@ -24,7 +24,7 @@ func test_expected_behavior():
     print("raw array: ", arg_array, ", decode: ", dec_array, ", encode: ", enc_array)
 
     return # todo: some bug in the following code
-    
+
     # test address type
     var arg_address = "0x415F71C759868930B12243fBb0fb0feA4AA4435b"
     var enc_address = abi.encode("address", arg_address).hex_encode()

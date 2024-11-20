@@ -201,7 +201,7 @@ Ref<BigInt> Optimism::chain_id(const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	Dictionary result = m_jsonrpc_helper->call_method("eth_chainId", p_params, req_id);
 	if (bool(result["success"]) == false) {
 		ERR_PRINT(
@@ -228,7 +228,7 @@ Dictionary Optimism::network_id(const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	return m_jsonrpc_helper->call_method("net_version", p_params, req_id);
 }
 
@@ -243,7 +243,7 @@ Dictionary Optimism::block_by_hash(const String &hash, const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	p_params.push_back(hash);
 	p_params.push_back(true);
 	return m_jsonrpc_helper->call_method("eth_getBlockByHash", p_params, req_id);
@@ -257,7 +257,7 @@ Dictionary Optimism::header_by_hash(const String &hash, const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	p_params.push_back(hash);
 	p_params.push_back(false);
 	return m_jsonrpc_helper->call_method("eth_getBlockByHash", p_params, req_id);
@@ -332,7 +332,7 @@ Dictionary Optimism::block_number(const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	return m_jsonrpc_helper->call_method("eth_blockNumber", p_params, req_id);
 }
 
@@ -565,7 +565,7 @@ Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &blo
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 
 	// first param: call msg
 	p_params.push_back(call_msg);
@@ -587,7 +587,7 @@ Ref<BigInt> Optimism::suggest_gas_price(const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	Dictionary result =  m_jsonrpc_helper->call_method("eth_gasPrice", p_params, req_id);
 	if (bool(result["success"]) == false) {
 		ERR_PRINT(
@@ -621,7 +621,7 @@ uint64_t Optimism::estimate_gas(const Dictionary &call_msg, const Variant &id) {
 		req_id = String::num_int64(m_req_id);
 	}
 
-	Vector<Variant> p_params	= Vector<Variant>();
+	Vector<Variant> p_params = Vector<Variant>();
 	p_params.push_back(call_msg);
 	Dictionary result = m_jsonrpc_helper->call_method("eth_estimateGas", p_params, req_id);
 	if (bool(result["success"]) == false) {

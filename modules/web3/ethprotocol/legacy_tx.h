@@ -66,7 +66,6 @@ public:
 	Ref<BigInt> get_sign_r() const;
 	Ref<BigInt> get_sign_s() const;
 
-	// TODO: @cooper, support transaction functions
 	PackedByteArray rlp_hash();
 	PackedByteArray rlp_encode();
 

@@ -320,16 +320,17 @@ Error read_integer(const Ref<ABIType>& type, const PackedByteArray& output, Vari
                 return OK;
             default: {
                 // the only case left for integer is int256
-                // 处理 int256
+                // handle int256
                 mpz_t big_int, max_uint256, one;
                 mpz_init(big_int);
                 mpz_import(big_int, 32, 1, 1, 0, 0, output.ptr());
 
-                // 初始化 max_uint256 和 one
+                // init max_uint256 & one
                 mpz_init_set_str(max_uint256, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
                 mpz_init_set_ui(one, 1);
 
-                if (mpz_tstbit(big_int, 255)) { // 检查第 255 位是否为 1
+                // Check if the 255th bit is 1
+                if (mpz_tstbit(big_int, 255)) {
                     mpz_neg(big_int, big_int);
                     mpz_add(big_int, big_int, max_uint256);
                     mpz_add(big_int, big_int, one);
@@ -338,7 +339,6 @@ Error read_integer(const Ref<ABIType>& type, const PackedByteArray& output, Vari
 
                 result = String(mpz_get_str(nullptr, 10, big_int));
 
-                // 清理
                 mpz_clear(big_int);
                 mpz_clear(max_uint256);
                 mpz_clear(one);

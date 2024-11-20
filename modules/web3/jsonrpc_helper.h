@@ -25,26 +25,54 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum RPCMethod {
-		ETH_BLOCKNUMBER,
-		ETH_SENDRAWTRANSACTION,
-		// ...
-	};
-
 	JsonrpcHelper();
 	~JsonrpcHelper();
 
+	/**
+	 * @brief Gets the hostname.
+	 * @return The hostname as a String.
+	 */
 	String get_hostname() const;
+
+	/**
+	 * @brief Sets the hostname.
+	 * @param hostname The hostname to set.
+	 */
 	void set_hostname(const String &hostname);
+
+	/**
+	 * @brief Gets the path URL.
+	 * @return The path URL as a String.
+	 */
 	String get_path_url() const;
+
+	/**
+	 * @brief Sets the path URL.
+	 * @param path_url The path URL to set.
+	 */
 	void set_path_url(const String &path_url);
+
+	/**
+	 * @brief Gets the port number.
+	 * @return The port number as an integer.
+	 */
 	int get_port() const;
+
+	/**
+	 * @brief Sets the port number.
+	 * @param port The port number to set.
+	 */
 	void set_port(int port);
 
-	// base request method
+	/**
+	 * @brief Makes a JSON-RPC call to the specified method with given parameters.
+	 * @param method The name of the method to call.
+	 * @param params The parameters to pass to the method.
+	 * @param id The ID of the request.
+	 * @param timeout_ms The timeout for the request in milliseconds (default is 20000 ms).
+	 * @return A Dictionary containing the response from the JSON-RPC call.
+	 */
 	Dictionary call_method(const String &method, const Vector<Variant> &params, const Variant &id, int timeout_ms = 20000);
-
-	String format_output(const String &p_text);
 };
 
 #endif // JSONRPC_HELPER_H

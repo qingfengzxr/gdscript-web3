@@ -100,7 +100,6 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
     Vector<String> headers;
     headers.push_back("Content-Type: application/json");
     headers.push_back("Content-Length: " + itos(msg.utf8().length()));
-    // headers.push_back("Accept-Encoding: gzip, deflate"); // TODO: maybe needn't
 
     // request need to be uint8_t array
     CharString charstr = msg.utf8();
@@ -163,7 +162,6 @@ Dictionary JsonrpcHelper::call_method(const String &method, const Vector<Variant
         response_body_str = String::utf8((const char*)response_body.ptr(), response_body.size());
     }
 
-    // TODO: Maybe returning the specified type is a better implementation
     // example response body: {"jsonrpc":"2.0","id":1,"result":"0x74751e4"}
     call_result["response_body"] = response_body_str;
 

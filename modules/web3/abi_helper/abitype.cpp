@@ -198,7 +198,8 @@ Ref<ABIType> NewABIType(const String& t, const String& internalType, const Vecto
             String fieldName = ResolveNameConflict(name, [&](const String &s) { return used.has(s); });
             used[fieldName] = true;
 
-            // TODO: 这里需要再关注一下实现，go那边是反射，因此需要。C++是否也需要呢？
+            // TODO: Need to pay attention to the implementation here.
+            // In Go, reflection is used, so it is necessary. Is it also needed in C++?
             if (!isValidFieldName(fieldName)) {
                 ERR_FAIL_V_MSG(Ref<ABIType>(), "field " + itos(idx) + " has invalid name");
             }
@@ -264,8 +265,6 @@ bool sliceTypeCheck(const Ref<ABIType> t, const Variant& v) {
 // typeCheck checks that the given reflection value can be assigned to the reflection
 // type in t.
 bool typeCheck(const Ref<ABIType> t, const Variant& v) {
-    // TODO: DEBUG FOR IT
-    return true;
     if (t->kind == SliceTy || t->kind == ArrayTy) {
         return sliceTypeCheck(t, v);
     }

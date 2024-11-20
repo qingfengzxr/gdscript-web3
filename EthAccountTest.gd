@@ -14,43 +14,43 @@ func _hd_wallet_import_test():
 	var counts = 5
 	for index in counts:
 		wallet.add()
-	
-	var accounts = wallet.get_accounts() 
+
+	var accounts = wallet.get_accounts()
 
 	if accounts.size() > 0:
 		for i in range(accounts.size()):
 			var account = accounts[i]
-		# 确保 account 是 EthAccount 类型
+		# Ensure the account is of type EthAccount
 			if account is EthAccount:
-				var eth_account = account as EthAccount  # 转换为 EthAccount
-				var address = eth_account.get_address()  # 调用 EthAccount 的方法
-				assert(address.hex_encode() == address_const[i])  # 使用索引检查是否匹配
+				var eth_account = account as EthAccount  # Cast to EthAccount
+				var address = eth_account.get_address()  # Call the method of EthAccount
+				assert(address.hex_encode() == address_const[i])  # Check if it matches using the index
 				print("Account Address:", address.hex_encode())
 			else:
 				print("Object at index", i, "is not of type EthAccount")
 	else:
 		print("No accounts found in the wallet.")
-		
+
 	pass
 
 func _hd_wallet_create_test():
-	
+
 	var ethMgr = EthWalletManager.new()
 	var counts = 5
 	var wallet = ethMgr.create(counts)
 	print("HD Wallet Mnemonic : ", wallet.get_mnemonic())
 	for index in counts:
 		wallet.add()
-	
-	var accounts = wallet.get_accounts() 
+
+	var accounts = wallet.get_accounts()
 
 	if accounts.size() > 0:
 		for i in range(accounts.size()):
 			var account = accounts[i]
-		# 确保 account 是 EthAccount 类型
+		# Ensure the account is of type EthAccount
 			if account is EthAccount:
-				var eth_account = account as EthAccount  # 转换为 EthAccount
-				var address = eth_account.get_address()  # 调用 EthAccount 的方法
+				var eth_account = account as EthAccount  # Cast to EthAccount
+				var address = eth_account.get_address()  # Call the method of EthAccount
 				print("Account Address:", address.hex_encode())
 			else:
 				print("Object at index", i, "is not of type EthAccount")

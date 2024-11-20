@@ -16,7 +16,6 @@
 
 #include "abi_util.h"
 
-// 前向声明 ABIArgumentMarshaling 类型
 struct ABIArgumentMarshaling;
 
 // Used to convert and map with abi
@@ -55,7 +54,7 @@ public:
     Ref<ABIType> elem; // Use Ref<> to manage the lifecycle of objects
     int size;
     String string_kind;
-    TypeKind kind; // TODO:  This field is not used at the moment
+    TypeKind kind; // TODO: This field is not used at the moment
 	String name;
 
     // Tuple relative fields

@@ -83,6 +83,8 @@ public:
 
 	// async jsonrpc request method, base on JSONRPC class.
 	// Only return request dictionary
+
+
 	Dictionary async_block_number(const Variant &id = "");
 	Dictionary async_send_transaction(const String &signed_tx, const Variant &id = "");
 };

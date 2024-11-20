@@ -59,7 +59,6 @@ extern "C" {
 #include "core/error/error_macros.h"
 #include "core/error/error_list.h"
 
-// must call initialize() after create a Secp256k1Wrapper instance, otherwise some function will panic
 class Secp256k1Wrapper : public RefCounted {
 	GDCLASS(Secp256k1Wrapper, RefCounted);
 

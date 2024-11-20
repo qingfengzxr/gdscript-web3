@@ -18,7 +18,6 @@ func deploy_contract():
 		return
 
 	var packed = h.pack("", ["GOLD", "GD", 8])
-	# 以16进制输出
 	print("---> result: ", packed.hex_encode())
 	var data = PackedByteArray()
 	data.append_array(CONTRACT_BYTECODE.hex_decode())
@@ -237,13 +236,12 @@ func transfer():
 	var legacyTx = LegacyTx.new()
 	legacyTx.set_nonce(7)
 	var gasPrice = BigInt.new()
-	# todo: write a function to get gas price & gas limit
 	gasPrice.from_string("2000000000")
 	print("gasPrice: ", gasPrice.get_string())
 	legacyTx.set_gas_price(gasPrice)
 	legacyTx.set_gas_limit(300000)
 	var value = BigInt.new()
-	value.from_string("0") # FIXME： value should support zero
+	value.from_string("0")
 	legacyTx.set_value(value)
 	legacyTx.set_data(packed)
 
@@ -257,7 +255,6 @@ func transfer():
 	var op = Optimism.new()
 	op.set_rpc_url(NODE_RPC_URL)
 	var secp256k1 = op.get_secp256k1_wrapper()
-	# todo: if the secret key has 0x prefix. We should can auto deal with it.
 	var set_sec_key = "4d2f96832bcbbc93a27ccea84b57237c0c858dec4e93113eef2862fc19f5ba6b"
 	assert(secp256k1.set_secret_key(set_sec_key), "set_secret_key failed!")
 	print("pass: set_secret_key success!")
@@ -297,7 +294,6 @@ func approve():
 	var legacyTx = LegacyTx.new()
 	legacyTx.set_nonce(9)
 	var gasPrice = BigInt.new()
-	# todo: write a function to get gas price & gas limit
 	gasPrice.from_string("2000000000")
 	print("gasPrice: ", gasPrice.get_string())
 	legacyTx.set_gas_price(gasPrice)
@@ -317,7 +313,6 @@ func approve():
 	var op = Optimism.new()
 	op.set_rpc_url(NODE_RPC_URL)
 	var secp256k1 = op.get_secp256k1_wrapper()
-	# todo: if the secret key has 0x prefix. We should can auto deal with it.
 	var set_sec_key = "4d2f96832bcbbc93a27ccea84b57237c0c858dec4e93113eef2862fc19f5ba6b"
 	assert(secp256k1.set_secret_key(set_sec_key), "set_secret_key failed!")
 	print("pass: set_secret_key success!")

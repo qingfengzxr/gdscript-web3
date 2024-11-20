@@ -168,7 +168,6 @@ func test_abiunpack() -> void:
 	# example correct output:
 	# [[1, ["2", "3"], [[[[["STRING_TEST", "string_test"]]], [4, 0, 0, 0, 0, 0, 0, 0, 0, 0]]], ["57896044618658097711785492504343953926634992332820282019728792003956564819967", "57896044618658097711785492504343953926634992332820282019728792003956564819966", "-57896044618658097711785492504343953926634992332820282019728792003956564819968"]], [[[["STRING_test", "STRING_TEST_MORE_THAN_32_BYTES_abcdefghijklmnopqrstuvwxyz_0000000111111222222"]]], [8, 0, 0, 0, 0, 0, 0, 0, 0, 0]], "8eee12bd33ec72a277ffa9ddf246759878589d3b", "9"]
 	print("unpack_into_array result: ", result)
-    # todo: check me
 	assert(validate_result_array(result), "unpack_into_array validate result failed!")
 	print("\n=============== done ===================\n")
 	return
