@@ -9,6 +9,10 @@ Supported Networks：
 
 ![Architecture](./imgs/image.png)
 
+## Docs
+* [en](https://gdweb3-docs.readthedocs.io/en/latest/)
+* [简体中文](https://gdweb3-docs-cn.readthedocs.io/zh-cn/latest/index.html)
+
 ## Description
 
 GDWeb3 aims to help Godot game developers easily interact with blockchain networks, empowering them to develop Gamefi and FOCG (full on-chain games).
@@ -88,4 +92,5 @@ The latest version is `v0.0.2-alpha`.
 TODO
 
 ## Example Project
-1.[TetrisDemo](https://github.com/hallazie/TetrisDemo)
+1.[HelloOptimism](https://github.com/qingfengzxr/HelloOptimism)
+2.[TetrisDemo](https://github.com/hallazie/TetrisDemo)
