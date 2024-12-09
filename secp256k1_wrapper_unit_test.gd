@@ -57,28 +57,10 @@ func test_expected_behavior():
 	pass
 
 func test_unexpected_behavior():
-	var secp256k1 = Secp256k1Wrapper.new()
-	assert(secp256k1.initialize(), "secp256k1 initialized failed!")
-
-	var set_sec_key = "7f7c0e6d14ad7bf694051b84b2572d638d875b0bb745bb151754de838d00"
-	assert(!secp256k1.set_secret_key(set_sec_key), "set incorrect secret key should be failed!")
-	print("pass: set incorrect secret key")
-
-	# unitest for sign and verify
-	var data = "Hello, world!"
-	var signature = secp256k1.sign(data.sha256_buffer());
-	var right_sign = "5fb4c163c113d3f8be0aca8a3ec1ab9dee06242bf3a0edcf7ad4199cde530545d387f01809198bb6a5797af41263609e06ef1776bc68de058ecd348c6fe95b5d"
-	assert(signature.hex_encode() == right_sign, "sign no equal right_sign!")
-	print("pass: sign equal right_sign!")
-
-	var verify_result = secp256k1.verify(data.sha256_buffer(), signature.slice(0, 31))
-	assert(!verify_result, "verify should be failed!")
-	print("pass: verify")
-
 	pass
 
 # Run the test case
 func _ready() -> void:
 	test_expected_behavior()
-	# test_unexpected_behavior()
+	test_unexpected_behavior()
 

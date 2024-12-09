@@ -334,9 +334,9 @@ func approve():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# legacytx_test()
-	deploy_contract()
+	# deploy_contract()
 	# name()
-	# balanceOf()
+	balanceOf()
 	# totalSupply()
 	# transfer()
 	# approve()
