@@ -9,7 +9,7 @@ Supported Networks：
 
 ![Architecture](./imgs/image.png)
 
-## Docs
+## SDK Usage Introduction (Docs)
 * [en](https://gdweb3-docs.readthedocs.io/en/latest/)
 * [简体中文](https://gdweb3-docs-cn.readthedocs.io/zh-cn/latest/index.html)
 
@@ -88,9 +88,7 @@ The latest version is `v0.0.2-alpha`.
 
 >However, it is not production-ready yet. We will expedite the process as soon as possible.
 
-## SDK Usage Introduction
-TODO
-
 ## Example Project
 1.[HelloOptimism](https://github.com/qingfengzxr/HelloOptimism)
+
 2.[TetrisDemo](https://github.com/hallazie/TetrisDemo)
