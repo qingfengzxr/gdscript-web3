@@ -15,6 +15,7 @@
 #include "core/error/error_list.h"
 #include "core/io/json.h"
 
+#include "common.h"
 #include "secp256k1_wrapper.h"
 #include "keccak_wrapper.h"
 #include "jsonrpc_helper.h"
@@ -56,7 +57,7 @@ public:
 	 * @param transaction Dictionary of transaction data.
 	 * @return Hex string of signed transaction.
 	 */
-	String signed_transaction(const Dictionary &transaction);
+	String sign_transaction(const Dictionary &transaction);
 
 
 	// sync jsonrpc request method, base on JsonrpcHelper class
@@ -77,7 +78,7 @@ public:
 
 	Dictionary header_by_hash(const String &hash, const Variant &id = "");
 	Dictionary header_by_number(const Ref<BigInt> &number, const Variant &id = "");
-	Dictionary call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id = "");
+	Dictionary call_contract(Dictionary call_msg, const String &block_number, const Variant &id = "");
 	Ref<BigInt> suggest_gas_price(const Variant &id = "");
 	uint64_t estimate_gas(const Dictionary &call_msg, const Variant &id = "");
 

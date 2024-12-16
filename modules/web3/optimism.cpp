@@ -109,7 +109,7 @@ void Optimism::set_rpc_url(const String &url) {
     }
 }
 
-String Optimism::signed_transaction(const Dictionary &transaction) {
+String Optimism::sign_transaction(const Dictionary &transaction) {
 	if (m_eth_account == NULL) {
 		ERR_PRINT("Eth account is not set.");
 		return "";
@@ -150,14 +150,6 @@ String Optimism::signed_transaction(const Dictionary &transaction) {
 		tx->set_gas_price(gas_price);
 	}
 
-	// deal with gas limit
-	// FIXME: has some bug for estimate_gas, need to fix.
-	if (transaction.has("gasLimit")) {
-		tx->set_gas_limit(transaction["gasLimit"]);
-	} else {
-		tx->set_gas_limit(828516);
-	}
-
 	// deal with to address
 	if (transaction.has("to")) {
 		tx->set_to_address(transaction["to"]);
@@ -177,10 +169,26 @@ String Optimism::signed_transaction(const Dictionary &transaction) {
 	}
 
 	// deal with data
+	String data_hex_str = String(transaction["data"]);
 	if (transaction.has("data")) {
-		tx->set_data(transaction["data"]);
+		PackedByteArray data = data_hex_str.hex_decode();
+		tx->set_data(data);
 	} else {
 		tx->set_data(PackedByteArray());
+	}
+
+	// deal with gas limit
+	if (transaction.has("gasLimit")) {
+		tx->set_gas_limit(transaction["gasLimit"]);
+	} else {
+		Dictionary callmsg = Dictionary();
+		callmsg["from"] = m_eth_account->get_hex_address();
+		callmsg["to"] = tx->get_to_address();
+		callmsg["value"] = tx->get_value()->to_hex();
+		callmsg["data"] = "0x" + data_hex_str;
+
+		uint64_t gaslimit = this->estimate_gas(callmsg);
+		tx->set_gas_limit(gaslimit); //828516
 	}
 
 	int res = tx->sign_tx_by_account(m_eth_account);
@@ -487,7 +495,7 @@ uint64_t Optimism::nonce_at(const String &account, const Ref<BigInt> &block_numb
 	}
 	int64_t nonce = 0;
 	Ref<JSON> json = Ref<JSON>(memnew(JSON));
-	print_line("estimate_gas result: " + String(result["response_body"]));
+	print_line("nonce_at result: " + String(result["response_body"]));
 	Dictionary res = json->parse_string(result["response_body"]);
 	nonce = String(res["result"]).hex_to_int();
 	return uint64_t(nonce);
@@ -558,7 +566,7 @@ Dictionary Optimism::async_send_transaction(const String &signed_tx, const Varia
 // blockNumber selects the block height at which the call runs. It can be nil, in which
 // case the code is taken from the latest known block. Note that state from very old
 // blocks might not be available.
-Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &block_number, const Variant &id) {
+Dictionary Optimism::call_contract(Dictionary call_msg, const String &block_number, const Variant &id) {
 	Variant req_id = id;
 	m_req_id++;
 	if (id == "") {
@@ -566,6 +574,14 @@ Dictionary Optimism::call_contract(const Dictionary &call_msg, const String &blo
 	}
 
 	Vector<Variant> p_params = Vector<Variant>();
+
+	if ( !call_msg.has("from") || call_msg["from"] == "" ) {
+		call_msg["from"] = m_eth_account->get_hex_address();
+	}
+
+	if ( call_msg.has("input") && !has_hex_prefix(String(call_msg["input"])) ) {
+		call_msg["input"] = "0x" + String(call_msg["input"]);
+	}
 
 	// first param: call msg
 	p_params.push_back(call_msg);
@@ -652,7 +668,7 @@ void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_eth_account"), &Optimism::get_eth_account);
 	ClassDB::bind_method(D_METHOD("set_eth_account", "account"), &Optimism::set_eth_account);
 
-	ClassDB::bind_method(D_METHOD("signed_transaction", "transaction"), &Optimism::signed_transaction);
+	ClassDB::bind_method(D_METHOD("sign_transaction", "transaction"), &Optimism::sign_transaction);
 
     // sync jsonrpc method
     ClassDB::bind_method(D_METHOD("chain_id", "id"), &Optimism::chain_id, DEFVAL(""));
