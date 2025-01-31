@@ -85,9 +85,21 @@ public:
 	// async jsonrpc request method, base on JSONRPC class.
 	// Only return request dictionary
 
-
+	Dictionary async_block_by_hash(const String &hash, const Variant &id = "");
+	Dictionary async_block_by_number(const Ref<BigInt> &number, const Variant &id = "");
 	Dictionary async_block_number(const Variant &id = "");
+	Dictionary async_block_receipts_by_number(const int64_t &number, const Variant &id = "");
+	Dictionary async_block_receipts_by_hash(const String &hash, const Variant &id = "");
+	Dictionary async_transaction_by_hash(const String &hash, const Variant &id = "");
+	Dictionary async_transaction_receipt_by_hash(const String &hash, const Variant &id);
+	Dictionary async_balance_at(const String &account, const Ref<BigInt> &block_number, const Variant &id = "");
+	Dictionary async_nonce_at(const String &account, const Ref<BigInt> &block_number = Ref<BigInt>(), const Variant &id = "");
 	Dictionary async_send_transaction(const String &signed_tx, const Variant &id = "");
+	Dictionary async_header_by_hash(const String &hash, const Variant &id = "");
+	Dictionary async_header_by_number(const Ref<BigInt> &number, const Variant &id = "");
+	Dictionary async_call_contract(Dictionary call_msg, const String &block_number, const Variant &id = "");
+	Dictionary async_suggest_gas_price(const Variant &id = "");
+	Dictionary async_estimate_gas(const Dictionary &call_msg, const Variant &id = "");
 };
 
 #endif // OPTIMISM_H
