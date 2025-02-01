@@ -257,6 +257,25 @@ Dictionary Optimism::block_by_hash(const String &hash, const Variant &id) {
 	return m_jsonrpc_helper->call_method("eth_getBlockByHash", p_params, req_id);
 }
 
+Dictionary Optimism::async_block_by_hash(const String &hash, const Variant &id) {
+	Variant req_id = id;
+	m_req_id++;
+	if (id == "") {
+		req_id = String::num_int64(m_req_id);
+	}
+
+	JSONRPC* jsonrpc = new JSONRPC();
+
+	Vector<String> p_params = Vector<String>();
+	p_params.push_back(hash);
+	p_params.push_back("true");
+	Dictionary request = jsonrpc->make_request("eth_getBlockByHash", p_params, req_id);
+
+	delete jsonrpc;
+	return request;
+}
+
+
 // header_by_hash() returns the block header with the given hash.
 Dictionary Optimism::header_by_hash(const String &hash, const Variant &id) {
 	Variant req_id = id;
@@ -270,6 +289,25 @@ Dictionary Optimism::header_by_hash(const String &hash, const Variant &id) {
 	p_params.push_back(false);
 	return m_jsonrpc_helper->call_method("eth_getBlockByHash", p_params, req_id);
 }
+
+Dictionary Optimism::async_header_by_hash(const String &hash, const Variant &id) {
+	Variant req_id = id;
+	m_req_id++;
+	if (id == "") {
+		req_id = String::num_int64(m_req_id);
+	}
+
+	JSONRPC* jsonrpc = new JSONRPC();
+
+	Vector<String> p_params = Vector<String>();
+	p_params.push_back(hash);
+	p_params.push_back("false");
+	Dictionary request = jsonrpc->make_request("eth_getBlockByHash", p_params, req_id);
+
+	delete jsonrpc;
+	return request;
+}
+
 
 // block_by_number() returns a block from the current canonical chain. If number is null, the
 // latest known block is returned.
@@ -555,7 +593,7 @@ Dictionary Optimism::async_send_transaction(const String &signed_tx, const Varia
 
 	Vector<String> p_params	= Vector<String>();
 	p_params.push_back(signed_tx);
-	Dictionary request = jsonrpc->make_request("eth_blockNumber", p_params, req_id);
+	Dictionary request = jsonrpc->make_request("eth_sendRawTransaction", p_params, req_id);
 	delete jsonrpc;
 	return request;
 }
@@ -658,6 +696,216 @@ uint64_t Optimism::estimate_gas(const Dictionary &call_msg, const Variant &id) {
 	return uint64_t(gas_limit);
 }
 
+Dictionary Optimism::async_block_by_number(const Ref<BigInt> &number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    String number_str = "";
+    if (number == NULL) {
+        number_str = "latest";
+    } else {
+        if (number->sgn() < 0) {
+            Dictionary request;
+            request["success"] = false;
+            request["errmsg"] = "block number must be positive.";
+            delete jsonrpc;
+            return request;
+        } else {
+            number_str = number->to_hex();
+        }
+    }
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(number_str);
+    p_params.push_back("true");
+    Dictionary request = jsonrpc->make_request("eth_getBlockByNumber", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_block_receipts_by_number(const int64_t &number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(block_number_to_string(number));
+    Dictionary request = jsonrpc->make_request("eth_getBlockReceipts", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_block_receipts_by_hash(const String &hash, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(hash);
+    Dictionary request = jsonrpc->make_request("eth_getBlockReceipts", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_transaction_by_hash(const String &hash, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(hash);
+    Dictionary request = jsonrpc->make_request("eth_getTransactionByHash", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_transaction_receipt_by_hash(const String &hash, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(hash);
+    Dictionary request = jsonrpc->make_request("eth_getTransactionReceipt", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_balance_at(const String &account, const Ref<BigInt> &block_number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(account);
+    if (block_number != NULL && block_number->sgn() > 0) {
+        p_params.push_back(block_number->to_hex());
+    } else if (block_number == NULL || block_number->sgn() == 0) {
+        p_params.push_back("latest");
+    } else if (block_number->sgn() < 0) {
+        p_params.push_back(block_number_to_string(block_number->to_int64()));
+    }
+
+    Dictionary request = jsonrpc->make_request("eth_getBalance", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_nonce_at(const String &account, const Ref<BigInt> &block_number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(account);
+    if (block_number != NULL && block_number->sgn() > 0) {
+        p_params.push_back(block_number->to_hex());
+    } else if (block_number == NULL || block_number->sgn() == 0) {
+        p_params.push_back("latest");
+    } else if (block_number->sgn() < 0) {
+        p_params.push_back(block_number_to_string(block_number->to_int64()));
+    }
+
+    Dictionary request = jsonrpc->make_request("eth_getTransactionCount", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_call_contract(Dictionary call_msg, const String &block_number, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    if (!call_msg.has("from") || call_msg["from"] == "") {
+        call_msg["from"] = m_eth_account->get_hex_address();
+    }
+
+    if (call_msg.has("input") && !has_hex_prefix(String(call_msg["input"]))) {
+        call_msg["input"] = "0x" + String(call_msg["input"]);
+    }
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(call_msg);
+    p_params.push_back(block_number == "" ? "latest" : block_number);
+
+    Dictionary request = jsonrpc->make_request("eth_call", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_suggest_gas_price(const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    Dictionary request = jsonrpc->make_request("eth_gasPrice", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
+
+Dictionary Optimism::async_estimate_gas(const Dictionary &call_msg, const Variant &id) {
+    Variant req_id = id;
+    m_req_id++;
+    if (id == "") {
+        req_id = String::num_int64(m_req_id);
+    }
+
+    JSONRPC* jsonrpc = new JSONRPC();
+
+    Vector<String> p_params = Vector<String>();
+    p_params.push_back(call_msg);
+    Dictionary request = jsonrpc->make_request("eth_estimateGas", p_params, req_id);
+
+    delete jsonrpc;
+    return request;
+}
 
 void Optimism::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_secp256k1_instance"), &Optimism::init_secp256k1_instance);
@@ -690,7 +938,20 @@ void Optimism::_bind_methods() {
     ClassDB::bind_method(D_METHOD("estimate_gas", "call_msg", "id"), &Optimism::estimate_gas, DEFVAL(""));
 
     // async jsonrpc method
-    ClassDB::bind_method(D_METHOD("async_block_number", "id"), &Optimism::async_block_number, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("async_send_transaction", "signed_tx", "id"), &Optimism::async_send_transaction, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_block_by_hash", "hash", "id"), &Optimism::async_block_by_hash, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_block_by_number", "number", "id"), &Optimism::async_block_by_number, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_block_number", "id"), &Optimism::async_block_number, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_block_receipts_by_number", "number", "id"), &Optimism::async_block_receipts_by_number, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_block_receipts_by_hash", "hash", "id"), &Optimism::async_block_receipts_by_hash, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_transaction_by_hash", "hash", "id"), &Optimism::async_transaction_by_hash, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_transaction_receipt_by_hash", "hash", "id"), &Optimism::async_transaction_receipt_by_hash, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_balance_at", "account", "block_number", "id"), &Optimism::async_balance_at, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_nonce_at", "account", "block_number", "id"), &Optimism::async_nonce_at, DEFVAL(Ref<BigInt>()), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("async_header_by_hash", "hash", "id"), &Optimism::async_header_by_hash, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("async_header_by_number", "number", "id"), &Optimism::async_header_by_number, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_call_contract", "call_msg", "block_number", "id"), &Optimism::async_call_contract, DEFVAL(""), DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_suggest_gas_price", "id"), &Optimism::async_suggest_gas_price, DEFVAL(""));
+    ClassDB::bind_method(D_METHOD("async_estimate_gas", "call_msg", "id"), &Optimism::async_estimate_gas, DEFVAL(""));
 }
 
