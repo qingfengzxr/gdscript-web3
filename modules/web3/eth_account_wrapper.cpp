@@ -1,7 +1,7 @@
 #include "eth_account_wrapper.h"
+#include "account.h"
 #include "core/variant/variant.h"
 #include "eth_abi/abi_util.h"
-#include "account.h"
 #include "eth_ecdsa.h"
 
 PackedByteArray EthAccount::get_private_key() const {
@@ -115,6 +115,12 @@ Ref<EthAccount> EthAccountManager::privateKeyToAccount(const PackedByteArray &pr
 
 // Bind methods to the Godot scripting system
 void EthAccountManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create","entropy"), &EthAccountManager::create,DEFVAL(PackedByteArray()));
-	ClassDB::bind_method(D_METHOD("from_private_key", "privkey"), &EthAccountManager::privateKeyToAccount);
+	ClassDB::bind_static_method("EthAccountManager",
+			D_METHOD("create", "entropy"),
+			&EthAccountManager::create,
+			DEFVAL(PackedByteArray()));
+
+	ClassDB::bind_static_method("EthAccountManager",
+			D_METHOD("privateKeyToAccount", "privkey"),
+			&EthAccountManager::privateKeyToAccount);
 }

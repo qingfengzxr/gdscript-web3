@@ -14,3 +14,8 @@ static char *m_strdup_n(const char *str, size_t str_len) {
 char *m_strdup(const char *str) {
 	return m_strdup_n(str, strlen(str));
 }
+
+void secure_clean(void *ptr, size_t len) {
+    volatile char *p = (volatile char *)ptr;
+    while (len--) *p++ = 0;
+}

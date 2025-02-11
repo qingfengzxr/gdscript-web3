@@ -34,7 +34,7 @@ PackedStringArray mnemonic_to_packed_string_array(const char *mnemonic_str) {
 	return packed_array;
 }
 
-static String packed_string_array_to_string(const PackedStringArray& p_array) {
+static String merge_mnemonic_phrases(const PackedStringArray &p_array) {
 	String result;
 
 	for (int i = 0; i < p_array.size(); ++i) {
@@ -77,7 +77,7 @@ EthWallet::EthWallet(const PackedStringArray &mnemonic, const String &passphrase
 	if (r_error) {
 		*r_error = OK;
 	}
-	const char *mnemonic_str = packed_string_array_to_string(mnemonic).utf8().ptr();
+	const char *mnemonic_str = merge_mnemonic_phrases(mnemonic).utf8().ptr();
 	if (!validate_mnemonic(mnemonic_str)) {
 		if (r_error) {
 			*r_error = FAILED;
@@ -122,23 +122,22 @@ bool EthWallet::init_keys(const char *mnemonic_str, const char *passphrase_str) 
 	size_t written;
 
 	if (bip39_mnemonic_to_seed(mnemonic_str, passphrase_str, rootSeed, BIP39_SEED_LEN_512, &written) != WEB3_OK) {
-		printf("Error deriving seed\n");
+		ERR_PRINT("Failed to derive wallet seed from mnemonic");
 		return false;
 	}
 	if (bip32_key_from_seed(rootSeed, sizeof(rootSeed), BIP32_VER_MAIN_PRIVATE, 0, &rootKey) != WEB3_OK) {
-		printf("Error deriving root key\n");
+		ERR_PRINT("Failed to derive root key from seed");
 		return false;
 	}
 	if (bip32_key_from_parent_path(&rootKey, ETH_MAIN_PATH, 4, BIP32_FLAG_KEY_PRIVATE, &masterKey) != WEB3_OK) {
-		printf("Error deriving master key\n");
+		ERR_PRINT("Failed to derive master key from root key");
 		return false;
 	}
 	return true;
 }
 
 bool EthWallet::add(const PackedByteArray &privKey) {
-	ETH_EXT_KEY childKey {};
-	EthAccountManager accountMgr;
+	ETH_EXT_KEY childKey{};
 	Ref<EthAccount> account;
 
 	if (privKey.size() == 0) {
@@ -151,7 +150,7 @@ bool EthWallet::add(const PackedByteArray &privKey) {
 	}
 
 	account.instantiate();
-	account = accountMgr.privateKeyToAccount(uint8PtrToPackedByteArray(&childKey.priv_key[1], sizeof(childKey.priv_key) -1 ));
+	account = EthAccountManager::privateKeyToAccount(uint8PtrToPackedByteArray(&childKey.priv_key[1], sizeof(childKey.priv_key) - 1));
 	accounts_.push_back(account);
 
 	return true;
@@ -171,19 +170,19 @@ bool EthWallet::remove(uint64_t index) {
 	return index < accounts_.size() ? (accounts_.remove_at(index), true) : false;
 }
 
-bool EthWallet::encrypt(PackedStringArray password) {
-	return true;
+bool EthWallet::encrypt(const String &password, const Dictionary &options) {
+	return false;
 }
-
 bool EthWallet::decrypt() {
-	return true;
+	return false;
 }
 
 bool EthWallet::clear() {
 	accounts_.clear();
 	mnemonic.clear();
-	memset(&rootKey, 0, sizeof(rootKey));
-	memset(&masterKey, 0, sizeof(masterKey));
+	secure_clean(rootSeed, sizeof(rootSeed));
+	secure_clean(&rootKey, sizeof(rootKey));
+	secure_clean(&masterKey, sizeof(masterKey));
 	return true;
 }
 
@@ -218,28 +217,21 @@ void EthWallet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mnemonic"), &EthWallet::get_mnemonic);
 }
 
-Ref<EthWallet> EthWalletManager::create(const int strength, const PackedByteArray &entropy, const String &passphrase) {
+Ref<EthWallet> EthWalletManager::create(int strength,
+		const PackedByteArray &entropy,
+		const String &passphrase) {
 	Ref<EthWallet> hd_wallet;
 	Error r_error = OK;
 	hd_wallet.instantiate(strength, entropy, passphrase, &r_error);
-
-	if (r_error != OK) {
-		return Ref<EthWallet>();
-	}
-	return hd_wallet;
+	return r_error == OK ? hd_wallet : Ref<EthWallet>();
 }
 
-Ref<EthWallet> EthWalletManager::from_mnemonic(const PackedStringArray &mnemonic, const String &passphrase) {
+Ref<EthWallet> EthWalletManager::from_mnemonic(const PackedStringArray &mnemonic,
+		const String &passphrase) {
 	Ref<EthWallet> hd_wallet;
 	Error r_error = OK;
 	hd_wallet.instantiate(mnemonic, passphrase, &r_error);
-
-	if (hd_wallet.is_valid()) {
-		if (r_error == OK) {
-			return hd_wallet;
-		}
-	}
-	return Ref<EthWallet>();
+	return (hd_wallet.is_valid() && r_error == OK) ? hd_wallet : Ref<EthWallet>();
 }
 
 Ref<EthWallet> EthWalletManager::load() {
@@ -251,18 +243,19 @@ Ref<EthWallet> EthWalletManager::load() {
 
 bool EthWalletManager::save(Ref<EthWallet> hd_wallet) {
 	if (!hd_wallet.is_valid()) {
-		printf("Invalid wallet reference.\n");
+		ERR_PRINT("Invalid wallet reference.\n");
 		return false;
 	}
-
-	hd_wallet->save();
-	return true;
+	return hd_wallet->save();
 }
 
 void EthWalletManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create", "strength", "entropy", "passphrase"), &EthWalletManager::create,
-			DEFVAL(0), DEFVAL(PackedByteArray()), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("from_mnemonic", "mnemonic", "passphrase"), &EthWalletManager::from_mnemonic, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("load"), &EthWalletManager::load);
-	ClassDB::bind_method(D_METHOD("save", "wallet"), &EthWalletManager::save);
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("create", "strength", "entropy", "passphrase"),
+			&EthWalletManager::create, DEFVAL(0), DEFVAL(PackedByteArray()), DEFVAL(""));
+
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("from_mnemonic", "mnemonic", "passphrase"),
+			&EthWalletManager::from_mnemonic, DEFVAL(""));
+
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("load"), &EthWalletManager::load);
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("save", "wallet"), &EthWalletManager::save);
 }
