@@ -864,7 +864,7 @@ Dictionary Optimism::async_call_contract(Dictionary call_msg, const String &bloc
         call_msg["input"] = "0x" + String(call_msg["input"]);
     }
 
-    Vector<String> p_params = Vector<String>();
+    Vector<Variant> p_params = Vector<Variant>();
     p_params.push_back(call_msg);
     p_params.push_back(block_number == "" ? "latest" : block_number);
 
@@ -899,7 +899,7 @@ Dictionary Optimism::async_estimate_gas(const Dictionary &call_msg, const Varian
 
     JSONRPC* jsonrpc = new JSONRPC();
 
-    Vector<String> p_params = Vector<String>();
+    Vector<Variant> p_params = Vector<Variant>();
     p_params.push_back(call_msg);
     Dictionary request = jsonrpc->make_request("eth_estimateGas", p_params, req_id);
 
@@ -949,7 +949,7 @@ void Optimism::_bind_methods() {
     ClassDB::bind_method(D_METHOD("async_balance_at", "account", "block_number", "id"), &Optimism::async_balance_at, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("async_nonce_at", "account", "block_number", "id"), &Optimism::async_nonce_at, DEFVAL(Ref<BigInt>()), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("async_header_by_hash", "hash", "id"), &Optimism::async_header_by_hash, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("async_header_by_number", "number", "id"), &Optimism::async_header_by_number, DEFVAL(""));
+	//ClassDB::bind_method(D_METHOD("async_header_by_number", "number", "id"), &Optimism::async_header_by_number, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("async_call_contract", "call_msg", "block_number", "id"), &Optimism::async_call_contract, DEFVAL(""), DEFVAL(""));
     ClassDB::bind_method(D_METHOD("async_suggest_gas_price", "id"), &Optimism::async_suggest_gas_price, DEFVAL(""));
     ClassDB::bind_method(D_METHOD("async_estimate_gas", "call_msg", "id"), &Optimism::async_estimate_gas, DEFVAL(""));
