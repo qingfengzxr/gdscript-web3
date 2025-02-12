@@ -98,14 +98,14 @@ public:
 	 * @brief Create a new Ethereum account.
 	 * @return The newly created account.
 	 */
-	Ref<EthAccount> create(const PackedByteArray &entropy = {});
+	static Ref<EthAccount> create(const PackedByteArray &entropy = {});
 
 	/**
 	 * @brief Create an Ethereum account from a private key.
 	 * @param privkey Byte array of the account's private key.
 	 * @return The account created from the private key.
 	 */
-	Ref<EthAccount> privateKeyToAccount(const PackedByteArray &privkey);
+	static Ref<EthAccount> privateKeyToAccount(const PackedByteArray &privkey);
 
 
 };

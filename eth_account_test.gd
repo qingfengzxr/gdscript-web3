@@ -8,9 +8,8 @@ func _hd_wallet_import_test():
 	"fb30288ec7c57819547b9b0f3cdf3941cad66790",
 	"dee895839eb69fe79336c76b20045f6ca2f37f6a"
 ]
-	var ethMgr = EthWalletManager.new()
 	var m = ["oil", "bamboo", "reject", "omit", "gentle", "boss", "useless", "fog", "genuine", "primary", "divorce", "abstract"]
-	var wallet = ethMgr.from_mnemonic(m)
+	var wallet = EthWalletManager.from_mnemonic(m)
 	var counts = 5
 	for index in counts:
 		wallet.add()
@@ -35,9 +34,8 @@ func _hd_wallet_import_test():
 
 func _hd_wallet_create_test():
 
-	var ethMgr = EthWalletManager.new()
 	var counts = 5
-	var wallet = ethMgr.create(counts)
+	var wallet = EthWalletManager.create(counts)
 	print("HD Wallet Mnemonic : ", wallet.get_mnemonic())
 	for index in counts:
 		wallet.add()

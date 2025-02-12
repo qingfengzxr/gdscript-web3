@@ -16,6 +16,7 @@ extern "C" {
 #define WEB3_ENOMEM -3 /** malloc() failed */
 
 char *m_strdup(const char *str);
+void secure_clean(void *ptr, size_t len);
 
 #ifdef __cplusplus
 }

@@ -197,7 +197,7 @@ public:
 	 * @return Returns a reference to the newly created EthWallet object. Returns
 	 *         an empty reference if wallet creation fails.
 	 */
-	Ref<EthWallet> create(int strength = 0, const PackedByteArray& entropy = {}, const String& passphrase = "");
+	static Ref<EthWallet> create(int strength = 0, const PackedByteArray& entropy = {}, const String& passphrase = "");
 
 	/**
 	 * @brief Creates an Ethereum wallet from the provided mnemonic phrase and passphrase.
@@ -210,7 +210,7 @@ public:
 	 * @param passphrase An optional passphrase to add an extra layer of security.
 	 * @return A Ref<EthWallet> instance representing the created wallet, or an empty Ref if creation fails.
 	 */
-	Ref<EthWallet> from_mnemonic(const PackedStringArray& mnemonic, const String& passphrase = "");
+	static Ref<EthWallet> from_mnemonic(const PackedStringArray& mnemonic, const String& passphrase = "");
 
 	/**
 	 * Loads an Ethereum wallet instance.
@@ -221,7 +221,7 @@ public:
 	 *
 	 * @return A reference to the loaded EthWallet instance.
 	 */
-	Ref<EthWallet> load();
+	static Ref<EthWallet> load();
 
 	/**
 	 * @brief Saves the provided Ethereum wallet.
@@ -232,7 +232,7 @@ public:
 	 * @param hd_wallet A reference to the EthWallet object to be saved.
 	 * @return Returns true if the wallet was saved successfully, false otherwise.
 	 */
-	bool save(Ref<EthWallet> hd_wallet);
+	static bool save(Ref<EthWallet> hd_wallet);
 
 };
 
