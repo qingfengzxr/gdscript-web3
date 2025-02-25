@@ -57,12 +57,12 @@ public:
 	PackedByteArray sign_data(const PackedByteArray &data) const;
 
 	/**
- * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
- *
- *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
- * @param data Byte array of the data to be signed.
- * @return Byte array of the signed data.
- */
+	 * @brief Sign data after caculate keccak256 hash with '\x19Ethereum Signed Message' prefix.
+	 *
+	 *        Rule: keccak256("\x19Ethereum Signed Message:\n" + len(message) + message).
+	 * @param data Byte array of the data to be signed.
+	 * @return Byte array of the signed data.
+	 */
 	PackedByteArray sign_data_with_prefix(const PackedByteArray &data) const;
 
 	/**
@@ -74,7 +74,7 @@ public:
 	bool init(const struct eth_account *m_account);
 
 private:
-	struct eth_account account {}; ///< Internal Ethereum account data.
+	struct eth_account account{}; ///< Internal Ethereum account data.
 	uint8_t pubKey33[33];
 };
 
@@ -95,6 +95,44 @@ public:
 	~EthAccountManager() = default;
 
 	/**
+	 * @brief Enum for decryption errors.
+	 */
+	enum DecryptError {
+		SUCCESS = 0,
+		
+		EMPTY_PASSWORD,
+		INVALID_PASSWORD,
+		INVALID_PRIVATE_KEY,
+	
+		INVALID_KEYSTORE_FORMAT,
+		INVALID_CRYPTO_SECTION,
+		
+		UNSUPPORTED_CIPHER,
+		UNSUPPORTED_KDF,
+		UNSUPPORTED_PRF,
+		
+		INVALID_PBKDF2_PARAMS,
+		PBKDF2_ITERATIONS_TOO_LOW,
+		PBKDF2_DERIVATION_FAILED,
+		
+		RNG_INIT_FAILED,
+		SALT_GENERATION_FAILED,
+		IV_GENERATION_FAILED,
+		
+		MAC_CALCULATION_FAILED,
+		
+		CIPHER_SETUP_FAILED,
+		CIPHER_KEY_FAILED,
+		CIPHER_IV_FAILED,
+		ENCRYPTION_FAILED,
+		DECRYPTION_FAILED,
+		FINAL_ENCRYPTION_FAILED,
+		FINAL_DECRYPTION_FAILED,
+		
+		ADDRESS_GENERATION_FAILED
+	};
+
+	/**
 	 * @brief Create a new Ethereum account.
 	 * @return The newly created account.
 	 */
@@ -107,7 +145,20 @@ public:
 	 */
 	static Ref<EthAccount> privateKeyToAccount(const PackedByteArray &privkey);
 
+	/**
+	 * @brief Create an Ethereum account from a private key.
+	 * @param privkey Byte array of the account's private key.
+	 * @return The account created from the private key.
+	 */
+	static Dictionary encrypt(const String &p_privkey, const String &p_password, const Dictionary &options);
 
+	/**
+	 * @brief Decrypt an Ethereum keystore file.
+	 * @param keystore The keystore data as a Dictionary.
+	 * @param password The password to decrypt the keystore.
+	 * @return The account from the keystore.
+	 */
+	static Dictionary decrypt(const Dictionary &keystore, const String &password);
 };
 
 #endif // _ETH_ACCOUNT_WRAPPER_H
