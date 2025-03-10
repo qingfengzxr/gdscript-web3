@@ -123,10 +123,6 @@ public:
 	 */
 	bool remove(uint64_t index);
 
-	bool encrypt(PackedStringArray password);
-
-	bool decrypt();
-
 	/**
 	 * @brief Clears the data stored in the Ethereum wallet.
 	 *
@@ -158,11 +154,6 @@ public:
 	 * @return The mnemonic phrase as a string.
 	 */
 	PackedStringArray get_mnemonic();
-
-
-	bool save();
-
-	bool load();
 };
 
 /**
@@ -211,28 +202,42 @@ public:
 	 * @return A Ref<EthWallet> instance representing the created wallet, or an empty Ref if creation fails.
 	 */
 	static Ref<EthWallet> from_mnemonic(const PackedStringArray& mnemonic, const String& passphrase = "");
+	
+	/**
+	 * @brief Encrypts Ethereum wallet data with a password
+	 *
+	 * This method encrypts Ethereum wallet data into a keystore format. The encrypted data
+	 * can be safely stored and can only be decrypted with the correct password.
+	 * The encryption process follows the Ethereum Keystore V3 standard.
+	 *
+	 * @param hdWallet The Ethereum wallet instance to be encrypted
+	 * @param p_password The password used for encryption
+	 * @param options A dictionary of encryption options that may include:
+	 *               - kdf: Key Derivation Function (e.g., "pbkdf2" or "scrypt")
+	 *               - cipher: Encryption algorithm (e.g., "aes-128-ctr")
+	 *               - salt: Optional custom salt value
+	 *               - iv: Optional initialization vector
+	 *               - n: scrypt N parameter
+	 *               - r: scrypt r parameter
+	 *               - p: scrypt p parameter
+	 *               - dklen: Derived key length
+	 * @return Returns an array containing the encrypted keystore data
+	 */
+	static Array encrypt(Ref<EthWallet> hdWallet, const String &p_password, const Dictionary &options);
 
 	/**
-	 * Loads an Ethereum wallet instance.
+	 * @brief Decrypts Ethereum wallet data from keystore format
 	 *
-	 * This method instantiates a new EthWallet object, loads the wallet data, and
-	 * returns a reference to the loaded wallet. It is primarily used for retrieving
-	 * and initializing an Ethereum wallet within the EthWalletManager context.
+	 * This method decrypts wallet data from keystore format using the provided password,
+	 * restoring the original Ethereum wallet instance. If the password is incorrect
+	 * or the data is corrupted, the decryption will fail and return an empty reference.
 	 *
-	 * @return A reference to the loaded EthWallet instance.
+	 * @param keystore Array containing the encrypted keystore data
+	 * @param p_password The password used for decryption
+	 * @param options A dictionary of decryption options that may contain specific parameters
+	 * @return Returns a reference to the decrypted EthWallet instance, or an empty reference if decryption fails
 	 */
-	static Ref<EthWallet> load();
-
-	/**
-	 * @brief Saves the provided Ethereum wallet.
-	 *
-	 * This method saves the given EthWallet object. If the wallet reference is invalid,
-	 * the method will print an error message and return false.
-	 *
-	 * @param hd_wallet A reference to the EthWallet object to be saved.
-	 * @return Returns true if the wallet was saved successfully, false otherwise.
-	 */
-	static bool save(Ref<EthWallet> hd_wallet);
+	static Ref<EthWallet> decrypt(const Array &keystore, const String &p_password, const Dictionary &options);
 
 };
 

@@ -146,7 +146,15 @@ bool EthWallet::add(const PackedByteArray &privKey) {
 			return false;
 		}
 	} else {
-		memcpy(childKey.priv_key, privKey.ptr(), sizeof(childKey.priv_key));
+		if (privKey.size() == 33) {
+			memcpy(childKey.priv_key, privKey.ptr(), sizeof(childKey.priv_key));
+		} else if (privKey.size() == 32) {
+			childKey.priv_key[0] = 0;
+			memcpy(childKey.priv_key + 1, privKey.ptr(), privKey.size());
+		} else {
+			ERR_PRINT("Invalid private key size: " + privKey.size());
+			return false;
+		}
 	}
 
 	account.instantiate();
@@ -170,13 +178,6 @@ bool EthWallet::remove(uint64_t index) {
 	return index < accounts_.size() ? (accounts_.remove_at(index), true) : false;
 }
 
-bool EthWallet::encrypt(PackedStringArray password) {
-	return false;
-}
-bool EthWallet::decrypt() {
-	return false;
-}
-
 bool EthWallet::clear() {
 	accounts_.clear();
 	mnemonic.clear();
@@ -198,20 +199,10 @@ PackedStringArray EthWallet::get_mnemonic() {
 	return mnemonic;
 }
 
-bool EthWallet::save() {
-	return false;
-}
-
-bool EthWallet::load() {
-	return false;
-}
-
 void EthWallet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add", "privKey"), &EthWallet::add, DEFVAL(PackedByteArray()));
 	ClassDB::bind_method(D_METHOD("remove_address", "address"), &EthWallet::remove_address);
 	ClassDB::bind_method(D_METHOD("remove", "index"), &EthWallet::remove);
-	ClassDB::bind_method(D_METHOD("encrypt", "password"), &EthWallet::encrypt);
-	ClassDB::bind_method(D_METHOD("decrypt"), &EthWallet::decrypt);
 	ClassDB::bind_method(D_METHOD("clear"), &EthWallet::clear);
 	ClassDB::bind_method(D_METHOD("get_accounts"), &EthWallet::get_accounts);
 	ClassDB::bind_method(D_METHOD("get_mnemonic"), &EthWallet::get_mnemonic);
@@ -234,19 +225,61 @@ Ref<EthWallet> EthWalletManager::from_mnemonic(const PackedStringArray &mnemonic
 	return (hd_wallet.is_valid() && r_error == OK) ? hd_wallet : Ref<EthWallet>();
 }
 
-Ref<EthWallet> EthWalletManager::load() {
-	Ref<EthWallet> hd_wallet;
-	hd_wallet.instantiate();
-	hd_wallet->load();
-	return hd_wallet;
+Array EthWalletManager::encrypt(Ref<EthWallet> hdWallet, const String &p_password, const Dictionary &options) {
+	Array encrypted_accounts;
+
+	if (!hdWallet.is_valid() || p_password.is_empty()) {
+		return encrypted_accounts;
+	}
+
+	Array accounts = hdWallet->get_accounts();
+
+	for (int i = 0; i < accounts.size(); i++) {
+		Ref<EthAccount> account = accounts[i];
+		if (!account.is_valid())
+			continue;
+
+		PackedByteArray privkey = account->get_private_key();
+		String privkey_hex = packedByteArrayToHexString(privkey);
+		Dictionary account_result = EthAccountManager::encrypt(privkey_hex, p_password, options);
+		if (account_result.has("error_code")) {
+			return encrypted_accounts;
+		}
+
+		encrypted_accounts.push_back(account_result);
+	}
+
+	return encrypted_accounts;
 }
 
-bool EthWalletManager::save(Ref<EthWallet> hd_wallet) {
-	if (!hd_wallet.is_valid()) {
-		ERR_PRINT("Invalid wallet reference.\n");
-		return false;
+Ref<EthWallet> EthWalletManager::decrypt(const Array &keystoreArray, const String &p_password, const Dictionary &options) {
+	Ref<EthWallet> wallet;
+	wallet.instantiate();
+
+	if (keystoreArray.size() == 0 || p_password.is_empty()) {
+		return wallet;
 	}
-	return hd_wallet->save();
+
+	for (int i = 0; i < keystoreArray.size(); i++) {
+		Dictionary keystore = keystoreArray[i];
+		Dictionary result = EthAccountManager::decrypt(keystore, p_password);
+
+		if (!result["success"]) {
+			return wallet;
+		}
+
+		Ref<EthAccount> account = result["account"];
+		if (!account.is_valid()) {
+			return wallet;
+		}
+
+		wallet->add(account->get_private_key());
+	}
+
+	Array accounts = wallet->get_accounts();
+	Ref<EthAccount> account = accounts[0];
+
+	return wallet;
 }
 
 void EthWalletManager::_bind_methods() {
@@ -256,6 +289,9 @@ void EthWalletManager::_bind_methods() {
 	ClassDB::bind_static_method("EthWalletManager", D_METHOD("from_mnemonic", "mnemonic", "passphrase"),
 			&EthWalletManager::from_mnemonic, DEFVAL(""));
 
-	ClassDB::bind_static_method("EthWalletManager", D_METHOD("load"), &EthWalletManager::load);
-	ClassDB::bind_static_method("EthWalletManager", D_METHOD("save", "wallet"), &EthWalletManager::save);
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("encrypt", "wallet", "password", "options"),
+			&EthWalletManager::encrypt, DEFVAL(Dictionary()));
+
+	ClassDB::bind_static_method("EthWalletManager", D_METHOD("decrypt", "keystore", "password", "options"),
+			&EthWalletManager::decrypt, DEFVAL(Dictionary()));
 }
