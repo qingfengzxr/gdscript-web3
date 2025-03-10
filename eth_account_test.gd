@@ -56,12 +56,33 @@ func _hd_wallet_create_test():
 		print("No accounts found in the wallet.")
 	pass
 
+func _hd_wallet_encrypt_test():
+	# Test function for wallet encryption and decryption
+	# This function creates a wallet, encrypts it with a password,
+	# then decrypts it and verifies that all accounts are preserved correctly
+	var counts = 10  # Create 10 accounts for testing
+	var wallet = EthWalletManager.create(counts)  # Create a new wallet with 10 accounts
+	var keystone = EthWalletManager.encrypt(wallet,"test123")  # Encrypt the wallet with password "test123"
+	print("keystone json :", keystone)  # Print the encrypted wallet keystone data
+
+	var de_wallet = EthWalletManager.decrypt(keystone,"test123")  # Decrypt the wallet using the same password
+	assert(de_wallet.get_accounts().size() == wallet.get_accounts().size())  # Verify account count matches
+	for i in range(de_wallet.get_accounts().size()):
+		var address_1 = wallet.get_accounts()[i].get_address().hex_encode()  # Get original address
+		var address_2 = de_wallet.get_accounts()[i].get_address().hex_encode()  # Get decrypted address
+		print("original  address : ", address_1)  # original address
+		print("decrypt   address : ", address_2)  # decrypted address
+		assert(address_1 == address_2)  # Verify addresses match
+	pass
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_hd_wallet_import_test();
 	print("--------------------------------------------------------------")
 	_hd_wallet_create_test();
-
+	print("--------------------------------------------------------------")
+	_hd_wallet_encrypt_test();
 	pass # Replace with function body.
 
 
