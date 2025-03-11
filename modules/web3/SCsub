@@ -24,6 +24,8 @@ for part in parts:
     elif part.startswith('-l'):
         libraries.append(part[2:])
 
+print(parts)
+
 module_env = env.Clone()
 module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "libkeccak/*.c")
@@ -56,14 +58,29 @@ module_env.Append(CPPPATH=include_paths + ["./",
                                            "./ethprotocol/eth_account",
                                            "./ethprotocol/eth_account/include",
                                            "./bigint",
-                                           "./abi_helper"
+                                           "./abi_helper",
                                            ])
 
 module_env.Append(CPPPATH=[thirdparty_path + 'include'])
 
-env.Append(LIBPATH=library_paths)
-env.Append(LIBS=libraries)
+if env['platform'] == 'windows':
+    # Windows
+    module_env.Append(CPPPATH=['/usr/x86_64-w64-mingw32/include'])
+    module_env.Append(LIBPATH=['/usr/x86_64-w64-mingw32/lib'])
+    print("now is compile for windows")
+    print("Current CPPPATH:", module_env['CPPPATH'])
+    print("Current LAIBPATH:", module_env['LIBPATH'])
+else:
+    # Linux
+    module_env.Append(CPPPATH=['/usr/local/include'])
+    module_env.Append(LIBPATH=['/usr/local/lib'])
+    print("now is compile for linux")
 
+#module_env.Append(LIBS=['gmp'])
+module_env.Append(LIBPATH=library_paths)
+module_env.Append(LIBS=libraries)
+
+env.Append(LIBS=['gmp'])
 # when you want debug memory allocation or crash, uncomment the following lines
 #env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 #env.Append(CPPFLAGS=['-fsanitize=address'])
